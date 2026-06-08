@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+data/trend2video.db
+outputs/audio/*
+outputs/reports/*
+outputs/scene_cards/*
+outputs/scripts/*
+outputs/storyboard.json
+outputs/subtitles/*
+outputs/thumbnails/*
+outputs/videos/*
+!outputs/**/.gitkeep

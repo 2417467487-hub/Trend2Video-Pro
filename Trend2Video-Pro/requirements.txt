@@ -1,0 +1,14 @@
+fastapi>=0.111.0
+uvicorn>=0.30.0
+streamlit>=1.36.0
+python-dotenv>=1.0.1
+requests>=2.32.0
+beautifulsoup4>=4.12.3
+playwright>=1.44.0
+edge-tts>=6.1.12
+moviepy>=1.0.3
+pillow>=10.3.0
+numpy>=1.26.0
+pydantic>=2.7.0
+sqlalchemy>=2.0.30
+pytest>=8.2.0
