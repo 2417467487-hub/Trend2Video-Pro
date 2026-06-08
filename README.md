@@ -1,64 +1,127 @@
 # Trend2Video Pro
 
-**From Emerging Trend to Publish-Ready Short Video in One Click**
+<p align="center">
+  <strong>From Emerging Trend to Publish-Ready Short Video in One Click</strong>
+</p>
 
-Trend2Video Pro 不是 AI 文案工具，也不是 Dashboard。它是一个“热点发现 + 内容决策 + 自动执行 + 质量控制”的短视频生产系统：输入热点标题或链接后，自动生成脚本、分镜、配音、字幕、封面、竖屏 MP4 和质量评分报告。
+<p align="center">
+  <a href="#quick-start">Quick Start</a> |
+  <a href="#what-it-builds">What It Builds</a> |
+  <a href="#quality-control">Quality Control</a> |
+  <a href="#roadmap">Roadmap</a>
+</p>
 
-适合个人创作者、科技博主、AI 工具号、留学生自媒体。第一版不做自动发布，只在本地导出可发布的视频资产。
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/Python-80%25%2B-3776AB?style=flat-square&logo=python&logoColor=white">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-API-009688?style=flat-square&logo=fastapi&logoColor=white">
+  <img alt="Streamlit" src="https://img.shields.io/badge/Streamlit-UI-FF4B4B?style=flat-square&logo=streamlit&logoColor=white">
+  <img alt="MoviePy" src="https://img.shields.io/badge/MoviePy-Video-111827?style=flat-square">
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-green?style=flat-square">
+</p>
 
-## 如何参与编辑
+Trend2Video Pro is an execution-first AI content production system. Give it a trend title or a source link, choose a target platform and style, then let it produce a short-video package: script, storyboard, voiceover, subtitles, thumbnail, vertical MP4, and a quality report.
 
-仓库公开后，任何人都可以 fork 项目并提交 Pull Request。  
-如果你希望某个人可以直接编辑主仓库，请在 GitHub 仓库的 `Settings -> Collaborators` 中邀请对方为 collaborator。
+It is **not** another AI copywriting toy.  
+It is **not** a dashboard full of charts.  
+It is a local-first pipeline for turning emerging trends into publish-ready short videos.
 
-## 核心功能
+## Demo
 
-- 网页信息抓取：使用 Playwright 截图，BeautifulSoup 抽取标题、描述和核心文本。
-- 选题评分：用可解释公式输出热点分、竞争度、变现潜力、账号适配度、时效性和总分。
-- 脚本生成：必须包含 3 秒强钩子、背景、3 个核心信息点、用户收益、结尾引导。
-- 脚本质检：低于 80 分时自动重写一次。
-- 分镜生成：每句旁白对应画面、素材类型、时长和字幕。
-- 配音与字幕：edge-tts 生成语音，SRT 自动断句，每条不超过 18 个中文字。
-- 视频合成：MoviePy 输出 1080x1920 竖屏 MP4，包含标题卡、场景卡、配音、字幕文本和结尾引导。
-- 封面生成：输出科技风 PNG 封面。
-- 最终报告：Markdown + JSON，包含评分、风险提示、优化建议和文件路径。
+> Demo GIF placeholder. Record the full flow later: input trend -> generate -> preview MP4 -> download assets.
 
-## 架构图
+![Demo GIF Placeholder](docs/demo.gif)
 
-```mermaid
-flowchart LR
-    UI["Streamlit UI / FastAPI / CLI"] --> Pipeline["One-Click Pipeline"]
-    Pipeline --> Collectors["Collectors: Webpage / Screenshot"]
-    Pipeline --> Scoring["Topic Scoring"]
-    Pipeline --> Generation["LLM or Mock Generation"]
-    Pipeline --> Quality["Quality Control"]
-    Pipeline --> Media["TTS / SRT / MoviePy / Thumbnail"]
-    Pipeline --> DB["SQLite Records"]
-    Media --> Outputs["Publish-Ready Assets"]
-    Quality --> Reports["Quality Report"]
+## Why This Exists
+
+Creators do not need one more text box that says "generate a viral script." They need a repeatable production line:
+
+- Find or enter a trend.
+- Decide whether the topic is worth making.
+- Generate a usable short-video script.
+- Build voiceover, subtitles, thumbnail, and MP4.
+- Run quality checks before publishing.
+
+Trend2Video Pro puts those steps into one practical workflow.
+
+## Who It Is For
+
+| Creator type | How it helps |
+| --- | --- |
+| Solo creators | Turn a topic idea into a complete video package quickly. |
+| Tech bloggers | Explain AI tools, GitHub projects, product launches, and news trends. |
+| AI tool accounts | Produce repeatable vertical videos for Bilibili, Xiaohongshu, Shorts, and TikTok. |
+| Student creators | Convert complex news and product updates into clear explainers. |
+
+## What It Builds
+
+After one click, the MVP writes a local production bundle:
+
+```text
+outputs/
+├── videos/trend_video.mp4
+├── scripts/script.md
+├── scripts/script.json
+├── subtitles/subtitles.srt
+├── subtitles/subtitles.json
+├── thumbnails/thumbnail.png
+└── reports/quality_report.md
 ```
 
-## Pipeline 流程图
+The final output is a **publish-ready vertical MP4**, not just analysis, outlines, or charts.
+
+## Core Features
+
+- **Trend input and webpage capture**: enter a trend title and optional URL; Playwright captures screenshots and page context.
+- **Explainable topic scoring**: scores trend heat, competition, monetization, audience fit, and urgency.
+- **Short-video script generation**: includes a 3-second hook, background, 3 key points, user benefit, and CTA.
+- **Script quality review**: reviews hook strength, clarity, information density, factual risk, and platform fit.
+- **Automatic rewrite pass**: if script quality is below the threshold, the pipeline rewrites once.
+- **Storyboard generation**: maps every voiceover segment to visual instructions and asset types.
+- **TTS voiceover**: uses `edge-tts` with Chinese and English voices.
+- **SRT subtitles**: auto-splits lines, keeps Chinese subtitle chunks short, and exports keyword metadata.
+- **MoviePy video composition**: creates 1080x1920 vertical MP4 with title card, scene cards, voiceover, and ending CTA.
+- **Thumbnail generation**: creates a clean tech-style cover image.
+- **Final quality report**: exports Markdown and JSON with scores, risks, suggestions, and file paths.
+
+## Pipeline
 
 ```mermaid
 flowchart TD
-    A["输入热点标题/链接"] --> B["网页抓取与截图"]
-    B --> C["选题评分 topic_score.json"]
-    C --> D["生成脚本 script.md / script.json"]
-    D --> E{"脚本评分 >= 80?"}
-    E -- "否" --> F["自动重写一次"]
-    E -- "是" --> G["生成分镜"]
-    F --> G
-    G --> H["edge-tts 配音"]
-    H --> I["生成 SRT 字幕"]
-    I --> J["MoviePy 合成竖屏 MP4"]
-    J --> K["生成封面 PNG"]
-    K --> L["输出质量报告"]
+    A["Input trend title or URL"] --> B["Capture webpage context"]
+    B --> C["Score topic opportunity"]
+    C --> D["Generate script"]
+    D --> E["Review script quality"]
+    E --> F{"Score >= 80?"}
+    F -- "No" --> G["Rewrite once"]
+    F -- "Yes" --> H["Generate storyboard"]
+    G --> H
+    H --> I["Generate TTS voiceover"]
+    I --> J["Generate SRT subtitles"]
+    J --> K["Compose vertical MP4"]
+    K --> L["Generate thumbnail"]
+    L --> M["Generate final QC report"]
 ```
 
-## 安装方法
+## Architecture
+
+```mermaid
+flowchart LR
+    UI["Streamlit / FastAPI / CLI"] --> Pipeline["One-Click Pipeline"]
+    Pipeline --> Collectors["Collectors"]
+    Pipeline --> Scoring["Scoring"]
+    Pipeline --> LLM["LLM Client or Mock"]
+    Pipeline --> Media["Media Engine"]
+    Pipeline --> QC["Quality Control"]
+    Pipeline --> DB["SQLite"]
+    Collectors --> Raw["data/raw"]
+    Media --> Outputs["outputs"]
+    QC --> Reports["reports"]
+```
+
+## Quick Start
 
 ```bash
+git clone https://github.com/2417467487-hub/Trend2Video-Pro.git
 cd Trend2Video-Pro
 python -m venv .venv
 .venv\Scripts\activate
@@ -67,9 +130,37 @@ playwright install chromium
 copy .env.example .env
 ```
 
-如果暂时没有任何 LLM API Key，保持 `LLM_PROVIDER=mock` 即可本地演示。
+No API key is required for the first demo. Keep `LLM_PROVIDER=mock` in `.env`.
 
-## .env 配置
+## Run The App
+
+Streamlit UI:
+
+```bash
+streamlit run app.py
+```
+
+CLI:
+
+```bash
+python main.py --title "OpenAI 发布新的 AI 视频工作流趋势" --platform B站 --duration 60 --style 科技资讯
+```
+
+FastAPI:
+
+```bash
+uvicorn main:app --reload
+```
+
+API request:
+
+```bash
+curl -X POST http://127.0.0.1:8000/generate ^
+  -H "Content-Type: application/json" ^
+  -d "{\"title\":\"OpenAI 发布新的 AI 视频工作流趋势\",\"platform\":\"B站\",\"duration\":60,\"style\":\"科技资讯\"}"
+```
+
+## Configuration
 
 ```env
 OPENAI_API_KEY=
@@ -82,66 +173,84 @@ OUTPUT_DIR=outputs
 DATABASE_URL=sqlite:///data/trend2video.db
 ```
 
-## 使用示例
-
-启动执行型界面：
-
-```bash
-streamlit run app.py
-```
-
-命令行生成：
-
-```bash
-python main.py --title "OpenAI 发布新的 AI 视频工作流趋势" --platform B站 --duration 60 --style 科技资讯
-```
-
-启动 API：
-
-```bash
-uvicorn main:app --reload
-```
-
-调用 API：
-
-```bash
-curl -X POST http://127.0.0.1:8000/generate ^
-  -H "Content-Type: application/json" ^
-  -d "{\"title\":\"OpenAI 发布新的 AI 视频工作流趋势\",\"platform\":\"B站\",\"duration\":60,\"style\":\"科技资讯\"}"
-```
-
-## 输出示例
-
-- `outputs/videos/trend_video.mp4`
-- `outputs/scripts/script.md`
-- `outputs/scripts/script.json`
-- `outputs/subtitles/subtitles.srt`
-- `outputs/thumbnails/thumbnail.png`
-- `outputs/reports/topic_score.json`
-- `outputs/reports/quality_report.md`
-- `outputs/reports/quality_report.json`
+Supported LLM providers are wrapped in `src/generation/llm_client.py`. If no key is configured, the project uses `mock_llm_response` so the full pipeline can still run locally.
 
 ## Quality Control
 
-质量控制写在代码中，不只写在文档里：
+Quality control is implemented in code, not just described in this README.
 
-- `src/scoring/trend_scorer.py`: `score_topic()` 使用公式 `0.3 * trend + 0.2 * audience_fit + 0.2 * monetization + 0.2 * urgency - 0.1 * competition`。
-- `src/quality/script_reviewer.py`: `review_script()` 输出 hook、清晰度、信息密度、事实风险、平台适配和总分。
-- `src/quality/video_quality_checker.py`: 检查 MP4 是否存在、文件大小和目标时长。
-- `src/quality/final_report.py`: `generate_final_report()` 汇总风险和建议。选题低于 70 分会提示“不建议优先制作”。
+| Module | Function | Purpose |
+| --- | --- | --- |
+| `src/scoring/trend_scorer.py` | `score_topic()` | Scores whether a trend is worth making. |
+| `src/quality/script_reviewer.py` | `review_script()` | Scores hook, clarity, density, risk, and platform fit. |
+| `src/generation/storyboard_generator.py` | `generate_storyboard()` | Converts script lines into visual scenes. |
+| `src/media/tts_generator.py` | `generate_tts()` | Generates voiceover with edge-tts. |
+| `src/media/subtitle_generator.py` | `generate_srt()` | Generates SRT subtitles and keyword metadata. |
+| `src/media/video_editor.py` | `compose_video()` | Builds the vertical MP4 with MoviePy. |
+| `src/media/thumbnail_generator.py` | `generate_thumbnail()` | Creates the cover image. |
+| `src/quality/final_report.py` | `generate_final_report()` | Writes the final QC report. |
+
+Topic opportunity score:
+
+```text
+final_score = 0.3 * trend
+            + 0.2 * audience_fit
+            + 0.2 * monetization
+            + 0.2 * urgency
+            - 0.1 * competition
+```
+
+If the score is below 70, the system still generates the video but marks it as **not recommended for priority production** in the report.
+
+## Project Structure
+
+```text
+Trend2Video-Pro/
+├── app.py
+├── main.py
+├── config/
+├── data/
+├── src/
+│   ├── collectors/
+│   ├── scoring/
+│   ├── generation/
+│   ├── media/
+│   ├── quality/
+│   ├── database/
+│   └── utils/
+├── tests/
+└── outputs/
+```
+
+## Contributing
+
+This repository is public. Anyone can fork it and open a Pull Request.
+
+If you want someone to edit the main repository directly, invite them in GitHub:
+
+```text
+Settings -> Collaborators -> Add people
+```
+
+Good first contributions:
+
+- Add more video templates.
+- Improve the scoring formula.
+- Add real GitHub Trending and Product Hunt collectors.
+- Add subtitle highlighting.
+- Add better thumbnail layouts.
+- Improve video render speed.
 
 ## Roadmap
 
-- 接入真实 GitHub Trending / Product Hunt 热点发现。
-- 支持多模板视频风格和字幕高亮。
-- 支持素材库、图片生成模型和 B-roll 自动匹配。
-- 增加事实核查来源引用。
-- 增加批量生成和队列任务。
-- 增加账号画像与平台历史数据适配。
-
-## Demo GIF
-
-`docs/demo.gif` 占位：后续录制从输入热点到输出 MP4 的完整流程。
+- Real trend discovery from GitHub Trending, Product Hunt, news, and social platforms.
+- Better source extraction and fact-checking with citations.
+- Multiple visual templates for different platforms.
+- B-roll and stock asset matching.
+- Generated image support for storyboards.
+- Batch generation queue.
+- Account profile matching and historical performance feedback.
+- Optional publishing integrations after local MP4 export is stable.
 
 ## License
 
