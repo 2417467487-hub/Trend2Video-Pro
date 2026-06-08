@@ -13,3 +13,4 @@ outputs/subtitles/*
 outputs/thumbnails/*
 outputs/videos/*
 !outputs/**/.gitkeep
+/Trend2Video-Pro/
