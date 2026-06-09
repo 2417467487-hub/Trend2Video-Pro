@@ -7,8 +7,7 @@ from typing import Any
 
 from config.settings import settings
 from src.collectors.webpage_screenshot import capture_webpage
-from src.database.db import SessionLocal, init_db
-from src.database.models import GenerationRecord
+from src.database.db import init_db, save_generation_task
 from src.generation.script_generator import generate_script
 from src.generation.storyboard_generator import generate_storyboard
 from src.media.subtitle_generator import generate_srt
@@ -36,6 +35,7 @@ class GenerationRequest:
     style: str = "科技资讯"
     voice: str = "zh-CN-XiaoxiaoNeural"
     rate: str = "+0%"
+    topic_id: int | None = None
 
 
 def run_generation(request: GenerationRequest) -> dict[str, Any]:
@@ -44,13 +44,23 @@ def run_generation(request: GenerationRequest) -> dict[str, Any]:
     init_db()
     logger.info("Starting generation for %s", request.title)
 
-    page_info = capture_webpage(request.url, request.title) if request.url else {"title": request.title, "core_text": "", "description": "", "screenshot_path": ""}
+    page_info = (
+        capture_webpage(request.url, request.title)
+        if request.url
+        else {"title": request.title, "core_text": "", "description": "", "screenshot_path": ""}
+    )
 
     topic_score = score_topic(request.title, request.url, request.platform, request.style, page_info.get("core_text", ""))
     topic_score_path = settings.report_dir / "topic_score.json"
     write_json(topic_score_path, topic_score)
 
-    script_data = generate_script(request.title, request.platform, request.duration, request.style, topic_score, page_info)
+    topic_payload = {
+        "title": request.title,
+        "url": request.url,
+        "description": page_info.get("description", ""),
+        **topic_score,
+    }
+    script_data = generate_script(topic_payload, platform=request.platform, style=request.style, duration=request.duration, page_info=page_info)
     script_score = review_script(script_data["script"], request.platform)
     if script_score["needs_rewrite"]:
         script_data["script"] = rewrite_script_once(script_data["script"], request.platform, request.style)
@@ -61,9 +71,15 @@ def run_generation(request: GenerationRequest) -> dict[str, Any]:
     storyboard = generate_storyboard(script_data, request.duration, page_info.get("screenshot_path", ""))
     audio_path = generate_tts(script_data["script"], request.voice, request.rate)
     subtitle_data = generate_srt(script_data["script"], request.duration)
-    video_path = compose_video(storyboard, audio_path, subtitle_data["srt_path"], script_data.get("title", request.title), duration=request.duration)
+    video_path = compose_video(
+        storyboard,
+        audio_path,
+        subtitle_data["srt_path"],
+        script_data.get("title", request.title),
+        duration=request.duration,
+    )
     thumbnail_path = generate_thumbnail(script_data.get("title", request.title), keyword=request.title[:8])
-    video_score = check_video_quality(video_path, request.duration)
+    video_score = check_video_quality(video_path, script_data["script"], {"duration": request.duration, "title": request.title})
 
     file_paths = {
         "topic_score": str(topic_score_path),
@@ -78,25 +94,19 @@ def run_generation(request: GenerationRequest) -> dict[str, Any]:
     }
     report = generate_final_report(topic_score, script_score, video_score, file_paths)
 
-    db = SessionLocal()
     try:
-        record = GenerationRecord(
+        save_generation_task(
+            topic_id=request.topic_id,
             title=request.title,
-            url=request.url,
             platform=request.platform,
-            duration=request.duration,
             style=request.style,
-            opportunity_score=topic_score["final_opportunity_score"],
-            video_path=video_path,
-            report_path=report["report_md_path"],
+            duration=request.duration,
+            status="completed" if video_score.get("video_exists") else "needs_review",
+            output_video_path=video_path,
+            output_report_path=report["report_md_path"],
         )
-        db.add(record)
-        db.commit()
     except Exception as exc:
         logger.warning("Database write failed: %s", exc)
-        db.rollback()
-    finally:
-        db.close()
 
     return {
         "input": request.__dict__,

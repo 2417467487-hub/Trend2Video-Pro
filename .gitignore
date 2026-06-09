@@ -4,6 +4,8 @@ __pycache__/
 .pytest_cache/
 .env
 data/trend2video.db
+data/raw/*
+!data/raw/.gitkeep
 outputs/audio/*
 outputs/reports/*
 outputs/scene_cards/*

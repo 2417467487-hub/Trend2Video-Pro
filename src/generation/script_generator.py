@@ -11,25 +11,40 @@ from src.utils.file_utils import write_json, write_text
 
 
 def generate_script(
-    title: str,
-    platform: str,
-    duration: int,
-    style: str,
-    topic_score: dict[str, Any],
+    topic: dict[str, Any] | str,
+    platform: str = "B站",
+    style: str = "科技资讯",
+    duration: int = 60,
+    topic_score: dict[str, Any] | None = None,
     page_info: dict[str, Any] | None = None,
     output_dir: Path | None = None,
 ) -> dict[str, Any]:
     """Generate a publish-oriented spoken script and save Markdown/JSON."""
-    page_info = page_info or {}
+    if isinstance(topic, dict):
+        title = topic.get("title", "未命名热点")
+        page_info = page_info or {"description": topic.get("description", ""), "core_text": ""}
+        topic_score = topic_score or topic
+    else:
+        title = topic
+        page_info = page_info or {}
+        topic_score = topic_score or {}
+
     prompt = f"""
-请为短视频生成自然口播脚本，必须包含3秒强钩子、背景介绍、3个核心信息点、用户收益、结尾引导。
+请为短视频生成自然口播脚本，必须包含：
+1. 3秒强钩子
+2. 背景介绍
+3. 3个核心信息点
+4. 用户收益
+5. 结尾引导
+
 标题：{title}
 平台：{platform}
 时长：{duration}秒
 风格：{style}
 选题评分：{topic_score}
 网页信息：{page_info.get('description', '')} {page_info.get('core_text', '')[:800]}
-要求：不要空泛，不要过度标题党，输出 JSON，包含 title/description/tags/script。
+
+要求：不要空泛，不要过度标题党，适合口播，只输出 JSON，包含 title/description/tags/script。
 """
     data = LLMClient().generate_json(prompt, task="script")
     script = data.get("script", "")

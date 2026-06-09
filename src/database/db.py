@@ -1,6 +1,9 @@
-"""SQLite database setup."""
+"""SQLite database setup and repository helpers."""
 
 from __future__ import annotations
+
+from datetime import datetime
+from typing import Any
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -17,3 +20,148 @@ def init_db() -> None:
     from src.database.models import Base
 
     Base.metadata.create_all(bind=engine)
+
+
+def upsert_topics(topics: list[dict[str, Any]]) -> int:
+    """Insert topics by URL and update snapshots for duplicates."""
+    from src.database.models import Topic, TopicSnapshot
+
+    init_db()
+    db = SessionLocal()
+    updated = 0
+    try:
+        for item in topics:
+            url = item.get("url") or f"manual://{item.get('title', 'untitled')}"
+            topic = db.query(Topic).filter(Topic.url == url).one_or_none()
+            collected_at = _parse_datetime(item.get("collected_at"))
+            if topic is None:
+                topic = Topic(url=url, created_at=datetime.utcnow())
+                db.add(topic)
+            topic.source = item.get("source", "unknown")
+            topic.title = item.get("title", "Untitled trend")
+            topic.description = item.get("description", "")
+            topic.raw_score = float(item.get("raw_score") or 0)
+            topic.trend_score = float(item.get("trend_score") or 0)
+            topic.competition_score = float(item.get("competition_score") or 0)
+            topic.monetization_score = float(item.get("monetization_score") or 0)
+            topic.audience_fit_score = float(item.get("audience_fit_score") or 0)
+            topic.urgency_score = float(item.get("urgency_score") or 0)
+            topic.final_opportunity_score = float(item.get("final_opportunity_score") or 0)
+            topic.recommendation_reason = item.get("recommendation_reason", "")
+            topic.risk_note = item.get("risk_note", "")
+            topic.status = item.get("status", "new")
+            topic.collected_at = collected_at
+            db.flush()
+            for metric_name in ["raw_score", "final_opportunity_score", "trend_score"]:
+                db.add(
+                    TopicSnapshot(
+                        topic_id=topic.id,
+                        metric_name=metric_name,
+                        metric_value=float(item.get(metric_name) or 0),
+                        collected_at=collected_at,
+                    )
+                )
+            updated += 1
+        db.commit()
+        return updated
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
+def list_topics(limit: int = 20) -> list[dict[str, Any]]:
+    """List topics by final opportunity score descending."""
+    from src.database.models import Topic
+
+    init_db()
+    db = SessionLocal()
+    try:
+        rows = db.query(Topic).order_by(Topic.final_opportunity_score.desc()).limit(limit).all()
+        return [_topic_to_dict(row) for row in rows]
+    finally:
+        db.close()
+
+
+def get_topic(topic_id: int) -> dict[str, Any] | None:
+    """Return one topic by ID."""
+    from src.database.models import Topic
+
+    init_db()
+    db = SessionLocal()
+    try:
+        row = db.query(Topic).filter(Topic.id == topic_id).one_or_none()
+        return _topic_to_dict(row) if row else None
+    finally:
+        db.close()
+
+
+def save_generation_task(
+    *,
+    topic_id: int | None,
+    title: str,
+    platform: str,
+    style: str,
+    duration: int,
+    status: str,
+    output_video_path: str,
+    output_report_path: str,
+) -> None:
+    """Persist a generation task."""
+    from src.database.models import GenerationTask
+
+    init_db()
+    db = SessionLocal()
+    try:
+        db.add(
+            GenerationTask(
+                topic_id=topic_id,
+                title=title,
+                platform=platform,
+                style=style,
+                duration=duration,
+                status=status,
+                output_video_path=output_video_path,
+                output_report_path=output_report_path,
+            )
+        )
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
+def _parse_datetime(value: Any) -> datetime:
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00")).replace(tzinfo=None)
+        except ValueError:
+            return datetime.utcnow()
+    return datetime.utcnow()
+
+
+def _topic_to_dict(row: Any) -> dict[str, Any]:
+    return {
+        "id": row.id,
+        "source": row.source,
+        "title": row.title,
+        "url": row.url,
+        "description": row.description,
+        "raw_score": row.raw_score,
+        "trend_score": row.trend_score,
+        "competition_score": row.competition_score,
+        "monetization_score": row.monetization_score,
+        "audience_fit_score": row.audience_fit_score,
+        "urgency_score": row.urgency_score,
+        "final_opportunity_score": row.final_opportunity_score,
+        "recommendation_reason": row.recommendation_reason,
+        "risk_note": row.risk_note,
+        "status": row.status,
+        "collected_at": row.collected_at.isoformat() if row.collected_at else "",
+        "created_at": row.created_at.isoformat() if row.created_at else "",
+    }

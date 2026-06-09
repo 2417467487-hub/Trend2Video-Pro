@@ -18,21 +18,23 @@ def generate_final_report(
 ) -> dict[str, Any]:
     """Write markdown and JSON quality-control reports."""
     output_dir = output_dir or settings.report_dir
-    risks = []
+    risks: list[str] = []
+
     if topic_score.get("final_opportunity_score", 0) < 70:
-        risks.append("选题总分低于70：不建议优先制作，但已按要求生成。")
+        risks.append("Topic score is below 70: not recommended for priority production, but assets were generated.")
     if script_score.get("overall_script_score", 0) < 80:
-        risks.append("脚本评分仍低于80，建议人工复核事实和表达。")
+        risks.append("Script score is below 80 after review; manual fact and expression review is recommended.")
     if not video_score.get("video_exists"):
-        risks.append("视频文件未成功生成，请检查 MoviePy/ffmpeg 环境。")
+        risks.append("Video file was not created successfully. Check MoviePy/ffmpeg runtime.")
     if not risks:
-        risks.append("未发现阻断发布的明显风险。")
+        risks.append("No blocking publishing risk detected in the MVP checks.")
 
     suggestions = [
-        "补充真实案例或数据来源可降低事实风险。",
-        "根据账号历史受众调整开头钩子。",
-        "发布前人工预览字幕遮挡和封面可读性。",
+        "Add source links or concrete examples to reduce factual risk.",
+        "Tune the opening hook for the creator account and target platform.",
+        "Preview subtitle placement and thumbnail readability before publishing.",
     ]
+
     report = {
         "topic_score": topic_score,
         "script_score": script_score,
@@ -41,22 +43,30 @@ def generate_final_report(
         "suggestions": suggestions,
         "generated_files": file_paths,
     }
+
     json_path = output_dir / "quality_report.json"
     md_path = output_dir / "quality_report.md"
     md = [
         "# Trend2Video Pro Quality Report",
         "",
-        f"- 选题总分：{topic_score.get('final_opportunity_score')}",
-        f"- 脚本总分：{script_score.get('overall_script_score')}",
-        f"- 视频质量分：{video_score.get('video_quality_score')}",
+        f"Topic Opportunity Score: {topic_score.get('final_opportunity_score')}/100",
+        f"Script Quality Score: {script_score.get('overall_script_score')}/100",
+        f"Video Quality Score: {video_score.get('overall_video_score', video_score.get('video_quality_score'))}/100",
         "",
-        "## 风险提示",
+        "## Topic Scores",
+        f"- Trend: {topic_score.get('trend_score')}",
+        f"- Competition: {topic_score.get('competition_score')}",
+        f"- Monetization: {topic_score.get('monetization_score')}",
+        f"- Audience Fit: {topic_score.get('audience_fit_score')}",
+        f"- Urgency: {topic_score.get('urgency_score')}",
+        "",
+        "## Risks",
         *[f"- {risk}" for risk in risks],
         "",
-        "## 可优化建议",
+        "## Optimization Suggestions",
         *[f"- {item}" for item in suggestions],
         "",
-        "## 生成文件路径",
+        "## Generated Files",
         *[f"- {key}: {value}" for key, value in file_paths.items()],
     ]
     write_json(json_path, report)

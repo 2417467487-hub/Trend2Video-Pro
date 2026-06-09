@@ -15,9 +15,15 @@ def _split_sentences(text: str) -> list[str]:
     return [p.strip() for p in parts if p.strip()]
 
 
-def generate_storyboard(script_data: dict[str, Any], duration: int, screenshot_path: str = "", output_path: Path | None = None) -> list[dict[str, Any]]:
+def generate_storyboard(
+    script_data: dict[str, Any] | str,
+    duration: int = 60,
+    screenshot_path: str = "",
+    output_path: Path | None = None,
+) -> list[dict[str, Any]]:
     """Create one visual scene per narration segment."""
-    sentences = _split_sentences(script_data.get("script", ""))
+    script = script_data.get("script", "") if isinstance(script_data, dict) else script_data
+    sentences = _split_sentences(script)
     if not sentences:
         raise ValueError("Script is empty; cannot generate storyboard.")
     per_scene = max(2.5, duration / len(sentences))

@@ -1,0 +1,18 @@
+[
+  {
+    "scene_id": 1,
+    "voiceover": "别急着划走，AI Agent 浏览器插件可能正在改变创作者的工作流。",
+    "visual_instruction": "竖屏科技风标题卡，突出 AI Agent 和浏览器插件。",
+    "asset_type": "text_card",
+    "duration": 4,
+    "subtitle_text": "AI Agent 浏览器插件正在变成新趋势"
+  },
+  {
+    "scene_id": 2,
+    "voiceover": "第一，它能把网页操作变成自动任务。",
+    "visual_instruction": "展示浏览器自动执行任务的界面截图。",
+    "asset_type": "screenshot",
+    "duration": 5,
+    "subtitle_text": "把网页操作变成自动任务"
+  }
+]

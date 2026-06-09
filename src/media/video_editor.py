@@ -63,7 +63,7 @@ def compose_video(
     storyboard: list[dict[str, Any]],
     audio_path: str,
     subtitle_path: str,
-    title: str,
+    title: str = "Trend2Video Pro",
     output_path: Path | None = None,
     duration: int = 60,
 ) -> str:
@@ -99,8 +99,7 @@ def compose_video(
         clips.append(resized(with_duration(ImageClip(str(title_card)), 2.5)))
         for idx, scene in enumerate(storyboard, start=1):
             image_path = _prepare_scene_image(scene, idx, title)
-            clip = resized(with_duration(ImageClip(str(image_path)), float(scene.get("duration", 3))))
-            clips.append(clip)
+            clips.append(resized(with_duration(ImageClip(str(image_path)), float(scene.get("duration", 3)))))
         end_card = _text_card("如果你想持续看懂新工具和新趋势\n关注我，下一条继续拆解", settings.output_dir / "scene_cards" / "end.png", "别错过")
         clips.append(with_duration(ImageClip(str(end_card)), 2.5))
 
