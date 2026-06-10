@@ -1,0 +1,35 @@
+{
+  "creator_name": "Trend2Video Demo Creator",
+  "niche": "AI tools, creator workflows, and practical tech explainers",
+  "keywords": [
+    "ai",
+    "agent",
+    "automation",
+    "workflow",
+    "creator",
+    "tool",
+    "browser"
+  ],
+  "target_platforms": [
+    "Bilibili",
+    "Xiaohongshu",
+    "YouTube Shorts",
+    "TikTok"
+  ],
+  "tone": "clear, practical, fast-paced, non-hype",
+  "audience": "solo creators, students, AI tool users, tech bloggers",
+  "past_successful_content": [
+    {
+      "title": "How AI browser agents change creator research",
+      "platform": "Bilibili",
+      "angle": "show the workflow, not just the product",
+      "views": 28000
+    },
+    {
+      "title": "Three AI tools that save creators one hour per day",
+      "platform": "YouTube Shorts",
+      "angle": "practical use cases and clear CTA",
+      "views": 42000
+    }
+  ]
+}

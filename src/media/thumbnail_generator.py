@@ -24,13 +24,13 @@ def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     return ImageFont.load_default()
 
 
-def generate_thumbnail(title: str, subtitle: str = "", keyword: str = "", output_path: Path | None = None) -> str:
+def generate_thumbnail(title: str, subtitle: str = "", keyword: str = "", output_path: Path | None = None, keywords: list[str] | None = None) -> str:
     """Generate a readable tech-style PNG thumbnail."""
     output_path = output_path or settings.thumbnail_dir / "thumbnail.png"
     copy = generate_cover_copy(title)
     headline = title[:18] or copy["headline"]
     subtitle = subtitle or copy["subtitle"]
-    keyword = keyword or copy["keyword"]
+    keyword = keyword or (keywords[0] if keywords else "") or copy["keyword"]
     img = Image.new("RGB", (1080, 1920), (12, 24, 48))
     draw = ImageDraw.Draw(img)
     for y in range(1920):

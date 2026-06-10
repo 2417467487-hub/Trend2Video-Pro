@@ -1,4 +1,4 @@
-"""Streamlit execution UI for Trend2Video Pro."""
+"""Streamlit UI for Trend2Video Pro."""
 
 from __future__ import annotations
 
@@ -6,58 +6,62 @@ from pathlib import Path
 
 import streamlit as st
 
+from src.agents.orchestrator import run_trend_to_video
 from src.collectors.collector_manager import collect_all_topics
+from src.creator.creator_profile import load_creator_profile, save_creator_profile
 from src.database.db import list_topics, upsert_topics
-from src.pipeline import GenerationRequest, run_generation
 
-
-PLATFORMS = ["B站", "小红书", "YouTube Shorts", "TikTok"]
-STYLES = ["科技资讯", "干货讲解", "爆款口播", "深度分析"]
+PLATFORMS = ["Bilibili", "Xiaohongshu", "YouTube Shorts", "TikTok"]
+STYLES = ["Tech News", "Educational", "Viral Talking Head", "Deep Analysis"]
 DURATIONS = [30, 60, 90]
-
 
 st.set_page_config(page_title="Trend2Video Pro", layout="wide")
 st.title("Trend2Video Pro")
-st.caption("One-click trend-to-video execution engine with quality control")
+st.caption("The open-source Trend-to-Video Agent Framework for content creators")
 
-page = st.sidebar.radio("页面", ["一键生成视频", "热点池"])
+page = st.sidebar.radio("Page", ["One-Click Generate", "Trend Pool", "Creator Profile", "Generated Packages"])
 
 
 def render_result(result: dict) -> None:
     """Render generated result assets."""
     files = result["files"]
-    left, right = st.columns([1.2, 1])
+    left, right = st.columns([1.15, 1])
     with left:
-        st.subheader("视频预览")
+        st.subheader("Video Preview")
         video_path = Path(files["video"])
         if video_path.exists():
             st.video(str(video_path))
         else:
-            st.warning("视频未成功生成，请查看质量报告和 .error.txt。")
+            st.warning("Video was not created. Check the quality report and .error.txt file.")
     with right:
-        st.subheader("发布素材")
-        st.write(f"**标题：** {result['script'].get('title', result['input']['title'])}")
-        st.write(f"**简介：** {result['script'].get('description', '')}")
-        st.write(f"**标签：** {', '.join(result['script'].get('tags', []))}")
-        st.metric("选题机会分", result["topic_score"].get("final_opportunity_score"))
-        st.metric("脚本质量分", result["script_score"].get("overall_script_score"))
-        st.metric("视频质量分", result["video_score"].get("overall_video_score", result["video_score"].get("video_quality_score")))
+        st.subheader("Publish Package")
+        st.write(f"**Title:** {result['script'].get('title', result['input']['title'])}")
+        st.write(f"**Description:** {result['script'].get('description', '')}")
+        st.write(f"**Tags:** {', '.join(result['script'].get('tags', []))}")
+        st.metric("Topic Score", result["topic_score"].get("final_opportunity_score"))
+        st.metric("Creator Fit", result.get("creator_fit", {}).get("creator_fit_score", "n/a"))
+        st.metric("Viral Probability", result.get("viral_prediction", {}).get("viral_probability", "n/a"))
+        st.metric("Video Quality", result["video_score"].get("overall_video_score", result["video_score"].get("video_quality_score")))
         thumb_path = Path(files["thumbnail"])
         if thumb_path.exists():
-            st.image(str(thumb_path), caption="封面图")
+            st.image(str(thumb_path), caption="Thumbnail")
 
     report_md = Path(files["report_md"])
     if report_md.exists():
-        with st.expander("质量评分报告", expanded=True):
+        with st.expander("Quality Report", expanded=True):
             st.markdown(report_md.read_text(encoding="utf-8"))
 
-    st.subheader("下载")
+    package_dir = result.get("publish_package", {}).get("package_dir")
+    if package_dir:
+        st.success(f"Publish package exported: {package_dir}")
+
+    st.subheader("Downloads")
     buttons = [
-        ("下载视频", files["video"]),
-        ("下载脚本", files["script_md"]),
-        ("下载字幕", files["subtitles"]),
-        ("下载封面", files["thumbnail"]),
-        ("下载质量报告", files["report_md"]),
+        ("Video", files["video"]),
+        ("Script", files["script_md"]),
+        ("Subtitles", files["subtitles"]),
+        ("Thumbnail", files["thumbnail"]),
+        ("Quality Report", files["report_md"]),
     ]
     cols = st.columns(len(buttons))
     for col, (label, path) in zip(cols, buttons):
@@ -66,65 +70,90 @@ def render_result(result: dict) -> None:
             col.download_button(label, data=p.read_bytes(), file_name=p.name)
 
 
-if page == "一键生成视频":
-    st.subheader("一键生成视频")
+if page == "One-Click Generate":
+    st.subheader("One-Click Generate")
     with st.form("generator"):
-        title = st.text_input("热点标题", value="AI Agent 浏览器插件正在变成新趋势")
-        url = st.text_input("热点链接（可选）", value="")
-        platform = st.selectbox("目标平台", PLATFORMS)
-        style = st.selectbox("视频风格", STYLES)
-        duration = st.selectbox("视频时长", DURATIONS, index=1)
-        submitted = st.form_submit_button("一键生成视频", type="primary")
-
+        title = st.text_input("Trend title", value="AI Agent Browser Tool Trend")
+        url = st.text_input("Trend URL (optional)", value="")
+        platform = st.selectbox("Target platform", PLATFORMS)
+        style = st.selectbox("Video style", STYLES)
+        duration = st.selectbox("Duration", DURATIONS, index=1)
+        submitted = st.form_submit_button("Generate publish package", type="primary")
     if submitted:
-        progress = st.progress(0, text="启动生成流程")
-        try:
-            progress.progress(15, text="抓取网页与评分")
-            request = GenerationRequest(title=title, url=url, platform=platform, duration=int(duration), style=style)
-            progress.progress(35, text="生成脚本、质检和分镜")
-            result = run_generation(request)
-            progress.progress(85, text="合成视频、封面和报告")
-            progress.progress(100, text="生成完成")
-            render_result(result)
-        except Exception as exc:
-            st.error(f"生成失败：{exc}")
+        with st.spinner("Running trend-to-video agent pipeline..."):
+            result = run_trend_to_video(
+                {"title": title, "url": url, "description": ""},
+                creator_profile=load_creator_profile(),
+                platform=platform,
+                style=style,
+                duration=int(duration),
+            )
+        render_result(result)
 
-if page == "热点池":
-    st.subheader("热点池")
-    st.write("热点池只是入口：快速发现可制作选题，然后一键进入视频生产流程。")
-    if st.button("更新今日热点", type="primary"):
-        with st.spinner("正在抓取 GitHub Trending / Hacker News / Product Hunt..."):
+elif page == "Trend Pool":
+    st.subheader("Trend Pool")
+    st.write("A lightweight entry point for finding what to make next. This is not a dashboard.")
+    if st.button("Update topics", type="primary"):
+        with st.spinner("Collecting GitHub Trending, Hacker News, and Product Hunt topics..."):
             count = upsert_topics(collect_all_topics(limit=20))
-        st.success(f"已更新 {count} 条热点")
+        st.success(f"Updated {count} topics")
 
     topics = list_topics(limit=20)
     if not topics:
-        st.info("暂无热点。点击“更新今日热点”开始。")
+        st.info("No topics yet. Click Update topics first.")
     for topic in topics:
         with st.container(border=True):
-            top_line = st.columns([4, 1])
-            top_line[0].markdown(f"### #{topic['id']} {topic['title']}")
-            top_line[1].metric("机会分", round(topic["final_opportunity_score"], 1))
-            st.write(f"**来源：** {topic['source']}  \n**URL：** {topic['url']}")
+            cols = st.columns([4, 1])
+            cols[0].markdown(f"### #{topic['id']} {topic['title']}")
+            cols[1].metric("Score", round(topic["final_opportunity_score"], 1))
+            st.write(f"**Source:** {topic['source']}  \n**URL:** {topic['url']}")
             if topic.get("description"):
                 st.write(topic["description"])
-            st.write(f"**推荐理由：** {topic['recommendation_reason']}")
-            st.write(f"**风险提示：** {topic['risk_note']}")
+            st.write(f"**Reason:** {topic['recommendation_reason']}")
+            st.write(f"**Risk:** {topic['risk_note']}")
             with st.form(f"topic-generate-{topic['id']}"):
-                cols = st.columns(4)
-                platform = cols[0].selectbox("平台", PLATFORMS, key=f"platform-{topic['id']}")
-                style = cols[1].selectbox("风格", STYLES, key=f"style-{topic['id']}")
-                duration = cols[2].selectbox("时长", DURATIONS, index=1, key=f"duration-{topic['id']}")
-                submitted = cols[3].form_submit_button("一键生成视频")
+                form_cols = st.columns(4)
+                platform = form_cols[0].selectbox("Platform", PLATFORMS, key=f"platform-{topic['id']}")
+                style = form_cols[1].selectbox("Style", STYLES, key=f"style-{topic['id']}")
+                duration = form_cols[2].selectbox("Duration", DURATIONS, index=1, key=f"duration-{topic['id']}")
+                submitted = form_cols[3].form_submit_button("Generate")
                 if submitted:
-                    result = run_generation(
-                        GenerationRequest(
-                            topic_id=topic["id"],
-                            title=topic["title"],
-                            url=topic["url"],
-                            platform=platform,
-                            style=style,
-                            duration=duration,
-                        )
-                    )
+                    result = run_trend_to_video(topic, load_creator_profile(), platform, style, duration)
                     render_result(result)
+
+elif page == "Creator Profile":
+    st.subheader("Creator Profile")
+    profile = load_creator_profile()
+    with st.form("creator-profile"):
+        niche = st.text_area("Creator niche", value=profile.get("niche", ""))
+        tone = st.text_input("Tone", value=profile.get("tone", ""))
+        audience = st.text_input("Audience", value=profile.get("audience", ""))
+        keywords = st.text_input("Keywords", value=", ".join(profile.get("keywords", [])))
+        platforms = st.multiselect("Target platforms", PLATFORMS, default=[p for p in profile.get("target_platforms", []) if p in PLATFORMS])
+        saved = st.form_submit_button("Save profile", type="primary")
+    if saved:
+        profile.update(
+            {
+                "niche": niche,
+                "tone": tone,
+                "audience": audience,
+                "keywords": [item.strip() for item in keywords.split(",") if item.strip()],
+                "target_platforms": platforms,
+            }
+        )
+        save_creator_profile(profile)
+        st.success("Creator profile saved")
+    st.json(profile)
+
+else:
+    st.subheader("Generated Packages")
+    package_root = Path("outputs/publish_packages")
+    packages = sorted(package_root.glob("*"), reverse=True) if package_root.exists() else []
+    if not packages:
+        st.info("No publish packages yet. Generate a video first.")
+    for package in packages[:20]:
+        with st.container(border=True):
+            st.markdown(f"### {package.name}")
+            st.write(str(package))
+            files = sorted([p.name for p in package.iterdir() if p.is_file()])
+            st.write(", ".join(files))

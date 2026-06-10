@@ -1,4 +1,4 @@
-"""End-to-end Trend2Video Pro MVP pipeline."""
+"""End-to-end Trend2Video Pro production pipeline."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from src.media.subtitle_generator import generate_srt
 from src.media.thumbnail_generator import generate_thumbnail
 from src.media.tts_generator import generate_tts
 from src.media.video_editor import compose_video
+from src.publishing.package_builder import build_publish_package
 from src.quality.final_report import generate_final_report
 from src.quality.script_reviewer import review_script, rewrite_script_once
 from src.quality.video_quality_checker import check_video_quality
@@ -30,16 +31,16 @@ class GenerationRequest:
 
     title: str
     url: str = ""
-    platform: str = "B站"
+    platform: str = "Bilibili"
     duration: int = 60
-    style: str = "科技资讯"
+    style: str = "Tech News"
     voice: str = "zh-CN-XiaoxiaoNeural"
     rate: str = "+0%"
     topic_id: int | None = None
 
 
 def run_generation(request: GenerationRequest) -> dict[str, Any]:
-    """Run the full MVP pipeline and return generated artifacts."""
+    """Run the full video production pipeline and return generated artifacts."""
     settings.ensure_dirs()
     init_db()
     logger.info("Starting generation for %s", request.title)
@@ -94,6 +95,19 @@ def run_generation(request: GenerationRequest) -> dict[str, Any]:
     }
     report = generate_final_report(topic_score, script_score, video_score, file_paths)
 
+    result = {
+        "input": request.__dict__,
+        "page_info": page_info,
+        "topic_score": topic_score,
+        "script": script_data,
+        "script_score": script_score,
+        "storyboard": storyboard,
+        "video_score": video_score,
+        "report": report,
+        "files": file_paths | {"report_md": report["report_md_path"], "report_json": report["report_json_path"]},
+    }
+    result["publish_package"] = build_publish_package(result)
+
     try:
         save_generation_task(
             topic_id=request.topic_id,
@@ -108,14 +122,4 @@ def run_generation(request: GenerationRequest) -> dict[str, Any]:
     except Exception as exc:
         logger.warning("Database write failed: %s", exc)
 
-    return {
-        "input": request.__dict__,
-        "page_info": page_info,
-        "topic_score": topic_score,
-        "script": script_data,
-        "script_score": script_score,
-        "storyboard": storyboard,
-        "video_score": video_score,
-        "report": report,
-        "files": file_paths | {"report_md": report["report_md_path"], "report_json": report["report_json_path"]},
-    }
+    return result

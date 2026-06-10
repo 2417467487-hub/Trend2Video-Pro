@@ -14,5 +14,8 @@ outputs/storyboard.json
 outputs/subtitles/*
 outputs/thumbnails/*
 outputs/videos/*
+outputs/publish_packages/*
 !outputs/**/.gitkeep
+data/creator_memory.json
+evaluation/benchmark_summary.md
 /Trend2Video-Pro/

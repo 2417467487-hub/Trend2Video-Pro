@@ -1,33 +1,49 @@
 # Architecture
 
-Trend2Video Pro is built around one pipeline: collect or receive a trend, score it, generate assets, and report quality.
+Trend2Video Pro is an execution-first Trend-to-Video Agent Framework. It is not a dashboard: every interface routes the user toward a publishable local package.
 
 ```mermaid
 flowchart LR
-    CLI["CLI"] --> Pipeline["Generation Pipeline"]
-    UI["Streamlit UI"] --> Pipeline
-    API["FastAPI"] --> Pipeline
-    Collectors["Collectors"] --> DB["SQLite Topic Pool"]
-    DB --> Pipeline
-    Pipeline --> LLM["LLM Client / Mock"]
-    Pipeline --> Media["MoviePy + edge-tts + Pillow"]
-    Pipeline --> QC["Quality Control"]
-    Media --> Outputs["outputs/"]
-    QC --> Reports["reports/"]
+    UI["Streamlit UI"] --> ORCH["Agent Orchestrator"]
+    CLI["CLI"] --> ORCH
+    API["FastAPI API"] --> ORCH
+    TOPICS["Trend Pool / Link / Title"] --> SCOUT["Trend Scout"]
+    SCOUT --> ANALYST["Trend Analyst"]
+    ANALYST --> FIT["Creator Strategy + Memory"]
+    FIT --> VIRAL["Viral Prediction"]
+    VIRAL --> PROD["Video Producer"]
+    PROD --> QC["Quality Reviewer"]
+    QC --> PKG["Publish Package"]
+    PKG --> OUT["outputs/publish_packages/"]
 ```
 
-## Main Modules
+## Agent Layer
 
-- `src/collectors/`: GitHub Trending, Hacker News, Product Hunt, and collector manager.
+- `trend_scout_agent`: normalizes topic candidates.
+- `trend_analyst_agent`: scores opportunity and content angle.
+- `creator_strategy_agent`: uses creator profile and memory to estimate fit.
+- `script_writer_agent`: wraps the script generator.
+- `fact_checker_agent`: produces source/risk checks for the script.
+- `storyboard_agent`: wraps storyboard generation.
+- `video_producer_agent`: executes the MoviePy/edge-tts media pipeline.
+- `quality_reviewer_agent`: checks publish readiness.
+- `orchestrator`: exposes `run_trend_to_video(...)`.
+
+## Core Modules
+
+- `src/collectors/`: GitHub Trending, Product Hunt, web screenshots, and topic updates.
 - `src/scoring/`: explainable opportunity scoring.
-- `src/generation/`: LLM wrapper, script generation, storyboard generation, titles, and cover copy.
+- `src/creator/`: creator profile, creator memory, and fit scoring.
+- `src/prediction/`: rule-based viral prediction MVP.
+- `src/generation/`: LLM client, script, storyboard, title, and cover copy generation.
 - `src/media/`: TTS, subtitles, video composition, thumbnails, and assets.
-- `src/quality/`: script review, video checks, fact-risk hints, and final reports.
-- `src/database/`: SQLite models and repository helpers.
+- `src/quality/`: script review, fact-risk hints, video checks, and final reports.
+- `src/publishing/`: publish package export.
+- `src/database/`: SQLite topic and generation records.
 
 ## Design Principles
 
-- The app should always be demoable without API keys.
-- Network failures should degrade to mock data.
-- Quality checks must run before the final report is produced.
-- The final output is a local MP4 and production bundle, not only text.
+- Demo mode must work without API keys.
+- Network failures should fall back to mock data.
+- Quality control is part of the pipeline, not only README copy.
+- The final artifact is a local MP4 plus title, description, hashtags, subtitles, thumbnail, metadata, and reports.

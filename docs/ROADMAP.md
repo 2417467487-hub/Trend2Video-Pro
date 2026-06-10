@@ -2,23 +2,23 @@
 
 ## Near Term
 
-- Add stronger GitHub Trending parsing and language filters.
-- Add real Product Hunt API support once a token is configured.
-- Improve subtitle rendering inside the MP4.
-- Add more thumbnail templates.
-- Add a lightweight task history page.
+- Improve topic collectors for GitHub, Product Hunt, Hacker News, and news pages.
+- Add more creator profile templates for tech creators, tool reviewers, students, and solopreneurs.
+- Expand publish package presets for Bilibili, Xiaohongshu, YouTube Shorts, and TikTok.
+- Add more thumbnail templates and subtitle styles.
+- Make benchmark reporting compare topic score, creator fit, viral prediction, and publish readiness.
 
 ## Mid Term
 
-- Add fact-checking with cited sources.
-- Add source-specific script angles.
-- Add B-roll and stock placeholder matching.
-- Add generated-image support for storyboard scenes.
-- Add account profile configuration for audience-fit scoring.
+- Add cited source retrieval for stronger fact checking.
+- Add image generation and stock/B-roll matching for storyboard scenes.
+- Add creator feedback loops from successful publish packages.
+- Add batch generation with queue status.
+- Improve video pacing with audio-aware scene timing.
 
 ## Later
 
-- Batch generation queue.
-- Multi-template render presets.
+- Optional human review workflow before package export.
 - Optional publishing integrations after local export is stable.
-- Analytics feedback loop from published videos.
+- Community agent/plugin system for custom collectors, scoring rules, and render templates.
+- Lightweight analytics import for post-publish learning.

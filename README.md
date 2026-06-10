@@ -1,18 +1,18 @@
 # Trend2Video Pro
 
 <p align="center">
-  <strong>One-click trend-to-video execution engine with quality control.</strong>
+  <strong>The Open-Source Trend-to-Video Agent Framework for Content Creators</strong>
 </p>
 
 <p align="center">
-  Discover trends -> score opportunities -> generate scripts -> review quality -> render vertical MP4 -> export a report.
+  Trend discovery -> opportunity scoring -> creator fit -> script -> fact check -> storyboard -> video -> quality review -> publish package.
 </p>
 
 <p align="center">
   <a href="#quick-start">Quick Start</a> |
-  <a href="#screenshots">Screenshots</a> |
-  <a href="#what-it-builds">What It Builds</a> |
-  <a href="#quality-control">Quality Control</a> |
+  <a href="#multi-agent-pipeline">Multi-Agent Pipeline</a> |
+  <a href="#creator-memory">Creator Memory</a> |
+  <a href="#publish-package-output">Publish Package</a> |
   <a href="#roadmap">Roadmap</a>
 </p>
 
@@ -29,21 +29,19 @@
   <img src="docs/assets/app-generate-view.png" alt="Trend2Video Pro one-click generation screen" width="920">
 </p>
 
-## 中文简介
+## Why Trend2Video Pro
 
-Trend2Video Pro 不是热点分析 Dashboard，也不是单纯的 AI 文案工具。它是一个“一键把热点变成可发布短视频”的自动执行系统。
+Trend2Video Pro is not a dashboard and not a simple AI copywriting tool. It is an execution-first framework that turns a trend into a creator-ready short-video publishing package.
 
-它把热点发现、内容机会评分、脚本生成、脚本质检、分镜、配音、字幕、封面、竖屏 MP4 和质量控制报告串成一条本地可运行的生产流水线。第一版不做自动发布，专注于本地生成可发布视频资产。
+Most AI video tools start at "write me a video." Trend2Video starts earlier:
 
-## At A Glance
+1. What is trending?
+2. Is the topic worth making?
+3. Does it fit this creator?
+4. Can we generate a script, storyboard, voiceover, subtitles, thumbnail, MP4, and quality report?
+5. Can the final bundle be reviewed and published manually?
 
-| Area | What it does |
-| --- | --- |
-| Trend entry | Accepts a manual trend title/link or updates a lightweight topic pool. |
-| Opportunity scoring | Scores trend heat, competition, monetization, audience fit, and urgency with explainable rules. |
-| Content generation | Produces spoken script, storyboard, voiceover, subtitles, thumbnail, and MP4. |
-| Quality control | Reviews script quality, checks video output, and exports a QC report. |
-| Local-first demo | Runs with mock LLM responses when no API key is configured. |
+No API key is required for demo mode. The project uses mock LLM responses and mock fallback collectors when network/API calls fail.
 
 ## Screenshots
 
@@ -55,131 +53,16 @@ Trend2Video Pro 不是热点分析 Dashboard，也不是单纯的 AI 文案工�
 | --- | --- |
 | <img src="docs/assets/quality-report-view.png" alt="Quality report screen" width="440"> | <img src="docs/assets/demo.gif" alt="Trend2Video Pro demo flow" width="440"> |
 
-## Why It Is Different
+## What Makes It Different
 
 | Common AI video generator | Trend2Video Pro |
 | --- | --- |
-| User enters a topic | Finds or accepts trends |
-| Generates a video directly | Scores whether the topic is worth making |
-| Usually lacks content QC | Reviews script and video quality |
-| Output is often a black box | Exports script, subtitles, thumbnail, MP4, and report |
-| Focuses on generation | Focuses on execution and publish readiness |
-
-Core idea:
-
-```text
-发现热点 -> 评分判断 -> 生成脚本 -> 质量检查 -> 生成视频 -> 输出报告
-```
-
-## Real Use Cases
-
-| Use case | Example workflow |
-| --- | --- |
-| AI 工具号 | Turn a new AI tool, model, or browser plugin into a short explainer. |
-| 科技资讯号 | Convert GitHub Trending, Hacker News, or product launches into video briefs. |
-| 小红书知识号 | Turn complex tech trends into concise, saveable knowledge cards. |
-| B站科普号 | Generate script, storyboard, subtitles, and a vertical video draft. |
-| YouTube Shorts 创作者 | Produce bilingual short-video asset packages for fast iteration. |
-
-## What It Builds
-
-One generation creates a local production bundle:
-
-```text
-outputs/
-├── videos/trend_video.mp4
-├── scripts/script.md
-├── scripts/script.json
-├── subtitles/subtitles.srt
-├── subtitles/subtitles.json
-├── thumbnails/thumbnail.png
-└── reports/quality_report.md
-```
-
-Example generated report:
-
-```text
-Topic Opportunity Score: 82/100
-Script Quality Score: 86/100
-Video Quality Score: 90/100
-
-Risks:
-- Verify source before publishing.
-- Avoid overclaiming product capability.
-
-Generated files:
-- outputs/videos/trend_video.mp4
-- outputs/scripts/script.md
-- outputs/subtitles/subtitles.srt
-- outputs/thumbnails/thumbnail.png
-- outputs/reports/quality_report.md
-```
-
-## Core Features
-
-| Feature | Status | Notes |
-| --- | --- | --- |
-| Manual trend input | Ready | Title + optional URL. |
-| Topic pool | Ready | GitHub Trending, Hacker News, Product Hunt mock/API-ready collectors. |
-| Explainable scoring | Ready | Formula-based scoring, no random black-box score. |
-| LLM wrapper | Ready | OpenAI / DeepSeek / Qwen / mock fallback. |
-| Script generation | Ready | Hook, background, 3 points, user benefit, CTA. |
-| Script review | Ready | Auto rewrite once when score is low. |
-| Storyboard | Ready | One scene per voiceover segment. |
-| TTS | Ready | edge-tts with silent fallback. |
-| Subtitles | Ready | SRT + keyword JSON. |
-| Video composition | Ready | MoviePy vertical MP4. |
-| Thumbnail | Ready | Pillow-generated PNG. |
-| Quality report | Ready | Markdown + JSON. |
-
-## Pipeline
-
-```mermaid
-flowchart TD
-    A["Update or input trend"] --> B["Collect webpage/source context"]
-    B --> C["Score topic opportunity"]
-    C --> D["Generate short-video script"]
-    D --> E["Review script quality"]
-    E --> F{"Overall script score >= 80?"}
-    F -- "No" --> G["Rewrite once"]
-    F -- "Yes" --> H["Generate storyboard"]
-    G --> H
-    H --> I["Generate TTS voiceover"]
-    I --> J["Generate SRT subtitles"]
-    J --> K["Compose 9:16 MP4"]
-    K --> L["Generate thumbnail"]
-    L --> M["Generate final QC report"]
-```
-
-## Architecture
-
-```mermaid
-flowchart LR
-    CLI["CLI"] --> Pipeline["One-click Pipeline"]
-    UI["Streamlit UI"] --> Pipeline
-    API["FastAPI"] --> Pipeline
-    Collectors["Collectors"] --> DB["SQLite Topic Pool"]
-    DB --> Pipeline
-    Pipeline --> LLM["LLM Client / Mock"]
-    Pipeline --> Media["MoviePy + edge-tts + Pillow"]
-    Pipeline --> QC["Quality Control"]
-    Media --> Outputs["outputs/"]
-    QC --> Reports["reports/"]
-```
-
-## Tech Stack
-
-| Layer | Tools |
-| --- | --- |
-| UI | Streamlit |
-| API | FastAPI |
-| CLI | argparse |
-| Video | MoviePy, Pillow |
-| Voice | edge-tts |
-| Web capture | Playwright, BeautifulSoup |
-| Data | SQLite, SQLAlchemy |
-| LLM | OpenAI / DeepSeek / Qwen / mock |
-| Tests | pytest |
+| User enters a topic | Discovers or accepts trends |
+| Generates a video directly | Scores opportunity and creator fit first |
+| Usually lacks memory | Uses creator profile and content history |
+| Usually lacks QC | Reviews script, video, risks, and publish readiness |
+| Output is often a black box | Exports a structured publish package |
+| Focuses on generation | Focuses on trend-to-video execution |
 
 ## Quick Start
 
@@ -215,71 +98,160 @@ On macOS/Linux:
 cp .env.example .env
 ```
 
-No API key is required for the first demo. Keep `LLM_PROVIDER=mock`.
-
-## Run It
-
-Generate a video:
+## CLI
 
 ```bash
-python main.py generate --title "AI Agent 浏览器插件正在变成新趋势" --platform "B站" --style "科技资讯" --duration 60
-```
-
-Update and list topics:
-
-```bash
+python main.py generate --title "AI Agent Browser Tool Trend" --platform "Bilibili" --style "Tech News" --duration 60
 python main.py update-topics
 python main.py list-topics
+python main.py generate-from-topic --topic-id 1 --platform "Xiaohongshu" --style "Tech News" --duration 60
 ```
 
-Generate from a stored topic:
-
-```bash
-python main.py generate-from-topic --topic-id 1 --platform "小红书" --style "科技资讯" --duration 60
-```
-
-Run Streamlit:
+## Streamlit
 
 ```bash
 streamlit run app.py
 ```
 
-Run FastAPI:
+The UI is intentionally simple:
+
+- One-Click Generate
+- Trend Pool
+- Creator Profile
+- Generated Packages
+
+It is not a complex analytics dashboard. The topic pool is only an entry point into execution.
+
+## API
 
 ```bash
-uvicorn main:app --reload
+uvicorn api:app --reload
 ```
 
-## Configuration
+Endpoints:
 
-```env
-OPENAI_API_KEY=
-DEEPSEEK_API_KEY=
-QWEN_API_KEY=
-LLM_PROVIDER=mock
-LLM_MODEL=mock-trend2video
-DEFAULT_TTS_VOICE=zh-CN-XiaoxiaoNeural
-OUTPUT_DIR=outputs
-DATABASE_URL=sqlite:///data/trend2video.db
+- `GET /health`
+- `POST /api/generate`
+- `POST /api/update-topics`
+- `GET /api/topics`
+- `POST /api/generate-from-topic?topic_id=1`
+
+## Multi-Agent Pipeline
+
+Trend2Video Pro now exposes a lightweight agent layer in `src/agents/`.
+
+```mermaid
+flowchart TD
+    A["Trend Scout Agent"] --> B["Trend Analyst Agent"]
+    B --> C["Creator Strategy Agent"]
+    C --> D["Script Writer Agent"]
+    D --> E["Fact Checker Agent"]
+    E --> F["Storyboard Agent"]
+    F --> G["Video Producer Agent"]
+    G --> H["Quality Reviewer Agent"]
+    H --> I["Publish Package"]
 ```
+
+Main orchestrator:
+
+```python
+from src.agents.orchestrator import run_trend_to_video
+
+result = run_trend_to_video(
+    topic={"title": "AI Agent Browser Tool Trend", "url": ""},
+    creator_profile=None,
+    platform="Bilibili",
+    style="Tech News",
+    duration=60,
+)
+```
+
+## Creator Memory
+
+Creator memory lives in:
+
+```text
+creator_profiles/default_creator.json
+src/creator/
+```
+
+It stores:
+
+- creator niche
+- target platforms
+- tone
+- audience
+- keyword profile
+- past successful content
+
+The framework calculates a creator-topic fit score before generation, so the same trend can be evaluated differently for different creators.
+
+## Viral Prediction
+
+The MVP viral predictor is rule-based and transparent. It outputs:
+
+```json
+{
+  "viral_probability": 0.64,
+  "predicted_view_range": "10k-50k",
+  "confidence_level": "medium",
+  "explanation": "Rule-based MVP using trend, urgency, creator fit, monetization, competition, and platform fit."
+}
+```
+
+Files:
+
+```text
+src/prediction/feature_builder.py
+src/prediction/viral_predictor.py
+```
+
+## Publish Package Output
+
+After generation, a creator-ready package is exported:
+
+```text
+outputs/publish_packages/{timestamp}_{title}/
+├── video.mp4
+├── thumbnail.png
+├── title.txt
+├── description.txt
+├── hashtags.txt
+├── subtitles.srt
+├── quality_report.md
+└── metadata.json
+```
+
+This is the final handoff unit for manual review and publishing.
+
+## Core Modules
+
+| Area | Path |
+| --- | --- |
+| Agents | `src/agents/` |
+| Creator memory | `src/creator/` |
+| Viral prediction | `src/prediction/` |
+| Publish package | `src/publishing/` |
+| Collectors | `src/collectors/` |
+| Scoring | `src/scoring/` |
+| Generation | `src/generation/` |
+| Media | `src/media/` |
+| Quality | `src/quality/` |
+| API | `api.py` |
+| CLI | `main.py` |
+| UI | `app.py` |
 
 ## Quality Control
 
-Quality control is implemented in code, not just described in the README.
+Quality control is implemented in code:
 
-| Module | Function | Purpose |
-| --- | --- | --- |
-| `src/scoring/opportunity_scorer.py` | `score_topic()` | Scores whether a topic is worth making. |
-| `src/quality/script_reviewer.py` | `review_script()` | Scores hook, clarity, density, factual risk, and platform fit. |
-| `src/generation/storyboard_generator.py` | `generate_storyboard()` | Converts script lines into visual scenes. |
-| `src/media/tts_generator.py` | `generate_tts()` | Generates voiceover with edge-tts and fallback audio. |
-| `src/media/subtitle_generator.py` | `generate_srt()` | Generates SRT subtitles and keyword metadata. |
-| `src/media/video_editor.py` | `compose_video()` | Builds the vertical MP4 with MoviePy. |
-| `src/media/thumbnail_generator.py` | `generate_thumbnail()` | Creates the cover image. |
-| `src/quality/video_quality_checker.py` | `check_video_quality()` | Checks duration, resolution intent, subtitle, audio, and hook signals. |
-| `src/quality/final_report.py` | `generate_final_report()` | Writes the final QC report. |
+- `review_script()` checks hook, clarity, density, factual risk, and platform fit.
+- `check_factual_risk()` flags absolute claims.
+- `check_video_quality()` checks output existence, duration intent, subtitle/audio signals, and hook signal.
+- `generate_final_report()` writes Markdown and JSON reports.
+- `quality_reviewer_agent.py` summarizes publish readiness.
 
-Topic opportunity formula:
+Opportunity formula:
 
 ```text
 final_score =
@@ -290,40 +262,19 @@ final_score =
 - 0.10 * competition_score
 ```
 
-The report always includes:
+## Benchmark
 
-```text
-Video Quality Score: xx/100
+Run a mock-mode benchmark:
+
+```bash
+python evaluation/run_benchmark.py
 ```
 
-## Repository Map
+Output:
 
 ```text
-Trend2Video-Pro/
-├── app.py                    # Streamlit UI
-├── main.py                   # CLI + FastAPI
-├── src/
-│   ├── collectors/           # Trend collectors
-│   ├── scoring/              # Opportunity scoring
-│   ├── generation/           # LLM, script, storyboard
-│   ├── media/                # TTS, subtitles, video, thumbnail
-│   ├── quality/              # QC checks and report
-│   ├── database/             # SQLite models/helpers
-│   └── utils/
-├── data/examples/            # Demo data
-├── docs/                     # Architecture, roadmap, screenshots
-├── outputs/                  # Local generated assets
-└── tests/                    # pytest suite
+evaluation/benchmark_summary.md
 ```
-
-## Demo Data
-
-Sample files live in `data/examples/`:
-
-- `sample_topic.json`
-- `sample_script.json`
-- `sample_storyboard.json`
-- `sample_quality_report.md`
 
 ## Tests
 
@@ -331,37 +282,24 @@ Sample files live in `data/examples/`:
 pytest
 ```
 
-The test suite does not require real API keys or real network access.
-
-## FAQ
-
-**Does it publish to social platforms automatically?**  
-No. The MVP only exports local MP4, script, subtitles, thumbnail, and quality report.
-
-**Can it run without an LLM API key?**  
-Yes. It uses deterministic mock responses when `LLM_PROVIDER=mock`.
-
-**Is this a dashboard?**  
-No. The topic pool is only an entry point. The core product is the one-click video generation pipeline.
-
-**Why formula-based scoring instead of machine learning?**  
-The first version prioritizes explainability and demo reliability.
-
-## Contributing
-
-This repository is public. Anyone can fork it and open a Pull Request.
-
-If you want someone to edit the main repository directly, invite them in GitHub:
-
-```text
-Settings -> Collaborators -> Add people
-```
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+Tests do not require real API keys or real network access.
 
 ## Roadmap
 
+- Stronger source extraction and citation-aware fact checks.
+- More creator profile presets.
+- Real performance feedback loop from published videos.
+- More visual templates and subtitle styles.
+- Optional publish integrations after local export is stable.
+- Replace rule-based viral prediction with a trained baseline once enough data exists.
+
 See [docs/ROADMAP.md](docs/ROADMAP.md).
+
+## Contributing
+
+This repository is public. Fork it and open a Pull Request.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

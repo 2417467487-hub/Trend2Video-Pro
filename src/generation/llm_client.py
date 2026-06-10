@@ -16,33 +16,32 @@ logger = get_logger(__name__)
 
 def mock_llm_response(prompt: str, task: str = "script") -> dict[str, Any]:
     """Return deterministic local content when no API key is configured."""
-    title_match = re.search(r"标题[:：]\s*(.+)", prompt)
-    title = title_match.group(1).strip() if title_match else "AI Agent 浏览器插件正在变成新趋势"
-    title = title[:40]
-
+    title_match = re.search(r"Title:\s*(.+)", prompt)
+    title = title_match.group(1).strip() if title_match else "AI Agent Browser Tool Trend"
+    title = title[:56]
     script = (
-        f"别急着划走，{title}可能正在改变内容创作者的工作流。\n\n"
-        "先说背景：现在热点越来越多，但真正值得做成内容的，必须同时满足新鲜、可解释、对观众有用这三个条件。\n\n"
-        "第一，它不是单纯的新闻，而是一个普通人可以理解、可以尝试、可以转化成行动的变化。\n"
-        "第二，它连接了真实场景，比如效率提升、学习决策、工具选择或内容变现。\n"
-        "第三，越早把它解释清楚，越容易建立账号的专业感和信任感。\n\n"
-        "对观众的收益是：不用自己翻一堆资料，也能快速判断这个热点值不值得关注。\n\n"
-        "如果你想持续看懂新工具和新趋势，关注我，下一条继续拆解。"
+        f"Do not scroll yet. {title} is not just another AI headline; it is a signal that creator workflows are changing.\n\n"
+        "Here is the background: creators are drowning in new tools, but only a few trends are worth turning into content.\n\n"
+        "First, this trend has a clear practical use case, so viewers can understand it quickly.\n"
+        "Second, it connects to real creator pain points: research, scripting, editing, and publishing speed.\n"
+        "Third, it gives you a useful angle: do not just report the launch, show what changes in the workflow.\n\n"
+        "The viewer benefit is simple: they can decide whether this trend is worth their time without reading ten different sources.\n\n"
+        "If you want faster breakdowns of AI tools and creator workflows, follow for the next one."
     )
     if task == "rewrite":
         script = (
-            f"先别划走，{title}不是又一个普通热点，它更像是创作者工作流变化的信号。\n\n"
-            "背景很简单：热点很多，但能做成好内容的热点，必须能回答一个问题：它和普通人有什么关系？\n\n"
-            "第一，它有明确的新鲜感，适合用短视频快速解释。\n"
-            "第二，它能连接真实使用场景，比如提效、学习、选工具和做内容。\n"
-            "第三，它给创作者提供了一个清晰角度：不是追新闻，而是帮观众判断机会。\n\n"
-            "看完这条，你至少能知道它值不值得继续关注，以及下一步该从哪里开始了解。\n\n"
-            "想每天更快看懂新趋势，关注我，我们下一条继续拆。"
+            f"Stop for a second. {title} may be one of those small trends that quietly changes how creators work.\n\n"
+            "The key context is this: creators do not need more hype. They need to know whether a trend can save time, create better content, or open a new angle.\n\n"
+            "First, this trend is easy to explain visually.\n"
+            "Second, it has a clear workflow use case.\n"
+            "Third, it gives the audience a next step instead of just a headline.\n\n"
+            "By the end, viewers should know what it is, why it matters, and whether they should try it.\n\n"
+            "Follow if you want practical AI trend breakdowns without the noise."
         )
     return {
         "title": title,
-        "description": "用一分钟看懂热点价值、应用场景和创作者机会。",
-        "tags": ["AI工具", "科技趋势", "短视频", "效率"],
+        "description": "A concise breakdown of why this trend matters for creators and what to do next.",
+        "tags": ["AI Tools", "Creator Workflow", "Short Video", "Automation"],
         "script": script,
     }
 
@@ -73,7 +72,7 @@ class LLMClient:
             json={
                 "model": model,
                 "messages": [
-                    {"role": "system", "content": "你是短视频内容制作专家，只输出 JSON。"},
+                    {"role": "system", "content": "You are a short-video content strategist. Return JSON only."},
                     {"role": "user", "content": prompt},
                 ],
                 "temperature": 0.7,
