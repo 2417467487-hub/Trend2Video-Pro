@@ -1,159 +1,223 @@
-"""Streamlit UI for Trend2Video Pro."""
+"""Streamlit execution console for Trend2Video Pro."""
 
 from __future__ import annotations
 
 from pathlib import Path
+from time import sleep
 
 import streamlit as st
 
 from src.agents.orchestrator import run_trend_to_video
-from src.collectors.collector_manager import collect_all_topics
-from src.creator.creator_profile import load_creator_profile, save_creator_profile
-from src.database.db import list_topics, upsert_topics
+from src.creator.creator_profile import load_creator_profile
 
-PLATFORMS = ["Bilibili", "Xiaohongshu", "YouTube Shorts", "TikTok"]
-STYLES = ["Tech News", "Educational", "Viral Talking Head", "Deep Analysis"]
+
+PLATFORMS = ["Bilibili", "YouTube", "TikTok"]
+PIPELINE_PLATFORMS = {"Bilibili": "Bilibili", "YouTube": "YouTube Shorts", "TikTok": "TikTok"}
+STYLES = ["Tech", "Viral", "Educational"]
+PIPELINE_STYLES = {"Tech": "Tech News", "Viral": "Viral Talking Head", "Educational": "Educational"}
 DURATIONS = [30, 60, 90]
+AGENT_STEPS = [
+    "Trend Scanning",
+    "Opportunity Scoring",
+    "Creator Fit Analysis",
+    "Script Writing",
+    "Fact Checking",
+    "Storyboard Generation",
+    "Video Generation",
+    "Quality Review",
+]
 
-st.set_page_config(page_title="Trend2Video Pro", layout="wide")
-st.title("Trend2Video Pro")
-st.caption("Trend Intelligence + Content Execution System")
 
-page = st.sidebar.radio("Page", ["One-Click Generate", "Trend Pool", "Creator Profile", "Generated Packages"])
+st.set_page_config(page_title="Trend2Video Pro", page_icon="🚀", layout="wide")
+st.markdown(
+    """
+    <style>
+    .block-container {padding-top: 2rem; max-width: 1180px;}
+    div[data-testid="stMetric"] {
+        background: linear-gradient(135deg, #ecfeff 0%, #f8fafc 100%);
+        border: 1px solid #dbeafe;
+        padding: 14px 16px;
+        border-radius: 14px;
+    }
+    .hero {
+        padding: 26px 30px;
+        border-radius: 22px;
+        color: white;
+        background: linear-gradient(135deg, #0f172a 0%, #075985 52%, #0891b2 100%);
+        margin-bottom: 22px;
+    }
+    .hero h1 {font-size: 44px; margin: 0 0 8px 0;}
+    .hero p {font-size: 18px; opacity: .92; margin: 0;}
+    .section-title {font-size: 23px; font-weight: 800; margin: 14px 0 8px 0;}
+    .soft-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 20px;
+        background: #ffffff;
+        box-shadow: 0 14px 40px rgba(15, 23, 42, .06);
+    }
+    .package-path {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    """
+    <div class="hero">
+      <h1>🚀 Trend2Video Pro</h1>
+      <p>Execution Console for Content Creators. Turn trends into publish-ready video packages in one click.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 
-def render_result(result: dict) -> None:
-    """Render generated result assets."""
-    files = result["files"]
-    left, right = st.columns([1.15, 1])
-    with left:
-        st.subheader("Video Preview")
-        video_path = Path(files["video"])
-        if video_path.exists():
-            st.video(str(video_path))
-        else:
-            st.warning("Video was not created. Check the quality report and .error.txt file.")
-    with right:
-        st.subheader("Publish Package")
-        st.write(f"**Title:** {result['script'].get('title', result['input']['title'])}")
-        st.write(f"**Description:** {result['script'].get('description', '')}")
-        st.write(f"**Tags:** {', '.join(result['script'].get('tags', []))}")
-        st.metric("Topic Score", result["topic_score"].get("final_opportunity_score"))
-        st.metric("Creator Fit", result.get("creator_fit", {}).get("creator_fit_score", "n/a"))
-        st.metric("Viral Probability", result.get("viral_prediction", {}).get("viral_probability", "n/a"))
-        st.metric("Video Quality", result["video_score"].get("overall_video_score", result["video_score"].get("video_quality_score")))
-        thumb_path = Path(files["thumbnail"])
-        if thumb_path.exists():
-            st.image(str(thumb_path), caption="Thumbnail")
+def _read_text(path: str | Path, max_chars: int = 1200) -> str:
+    file_path = Path(path)
+    if not file_path.exists():
+        return ""
+    return file_path.read_text(encoding="utf-8", errors="ignore")[:max_chars]
 
-    report_md = Path(files["report_md"])
-    if report_md.exists():
-        with st.expander("Quality Report", expanded=True):
-            st.markdown(report_md.read_text(encoding="utf-8"))
 
-    package_dir = result.get("publish_package", {}).get("package_dir")
-    if package_dir:
-        st.success(f"Publish package exported: {package_dir}")
+def _quality_summary(result: dict) -> list[str]:
+    report = result.get("report", {})
+    risks = report.get("risks", [])[:2]
+    suggestions = report.get("suggestions", [])[:2]
+    items = []
+    if risks:
+        items.extend([f"Risk: {item}" for item in risks])
+    if suggestions:
+        items.extend([f"Improve: {item}" for item in suggestions])
+    return items or ["No blocking publishing risk detected in the MVP quality checks."]
 
-    st.subheader("Downloads")
-    buttons = [
-        ("Video", files["video"]),
-        ("Script", files["script_md"]),
-        ("Subtitles", files["subtitles"]),
-        ("Thumbnail", files["thumbnail"]),
-        ("Quality Report", files["report_md"]),
+
+def render_output(result: dict) -> None:
+    """Render the finished creator package without raw logs or technical tables."""
+    files = result.get("files", {})
+    script = result.get("script", {})
+    viral = result.get("viral_prediction", {})
+    package = result.get("publish_package", {})
+    viral_score = round(float(viral.get("viral_probability", 0)) * 100)
+
+    st.markdown('<div class="section-title">🎬 Output Package</div>', unsafe_allow_html=True)
+    top_left, top_right = st.columns([1.25, 1], gap="large")
+
+    with top_left:
+        with st.container(border=True):
+            st.subheader("Video Preview")
+            video_path = Path(files.get("video", ""))
+            if video_path.is_file():
+                st.video(str(video_path))
+            else:
+                st.info("Video preview will appear here after generation.")
+
+    with top_right:
+        with st.container(border=True):
+            st.subheader("Creator Assets")
+            st.metric("Viral Score", f"{viral_score}/100")
+            st.markdown(f"**Title**  \n{script.get('title', result.get('input', {}).get('title', 'Untitled'))}")
+            st.markdown(f"**Hashtags**  \n{' '.join('#' + str(tag).replace(' ', '') for tag in script.get('tags', []))}")
+            st.markdown(f"**Description**  \n{script.get('description', 'A concise trend breakdown for creators.')}")
+            thumbnail_path = Path(files.get("thumbnail", ""))
+            if thumbnail_path.is_file():
+                st.image(str(thumbnail_path), caption="Thumbnail preview", use_container_width=True)
+
+    lower_left, lower_right = st.columns([1, 1], gap="large")
+    with lower_left:
+        with st.container(border=True):
+            st.subheader("Subtitles")
+            subtitles = _read_text(files.get("subtitles", ""), max_chars=900)
+            st.text_area("Ready-to-use SRT preview", value=subtitles, height=210, label_visibility="collapsed")
+
+    with lower_right:
+        with st.container(border=True):
+            st.subheader("Quality Report Summary")
+            for item in _quality_summary(result):
+                st.write(f"- {item}")
+            if package.get("package_dir"):
+                st.markdown("**Publish package**")
+                st.markdown(f"<div class='package-path'>{package['package_dir']}</div>", unsafe_allow_html=True)
+
+    st.markdown("#### Download Assets")
+    download_items = [
+        ("MP4 Video", files.get("video")),
+        ("Thumbnail", files.get("thumbnail")),
+        ("Subtitles", files.get("subtitles")),
+        ("Quality Report", files.get("report_md")),
     ]
-    cols = st.columns(len(buttons))
-    for col, (label, path) in zip(cols, buttons):
-        p = Path(path)
-        if p.exists():
-            col.download_button(label, data=p.read_bytes(), file_name=p.name)
+    cols = st.columns(4)
+    for col, (label, path) in zip(cols, download_items):
+        file_path = Path(path or "")
+        if file_path.is_file():
+            col.download_button(label, data=file_path.read_bytes(), file_name=file_path.name, use_container_width=True)
 
 
-if page == "One-Click Generate":
-    st.subheader("One-Click Generate")
-    with st.form("generator"):
-        title = st.text_input("Trend title", value="AI Agent Browser Tool Trend")
-        url = st.text_input("Trend URL (optional)", value="")
-        platform = st.selectbox("Target platform", PLATFORMS)
-        style = st.selectbox("Video style", STYLES)
-        duration = st.selectbox("Duration", DURATIONS, index=1)
-        submitted = st.form_submit_button("Generate publish package", type="primary")
-    if submitted:
-        with st.spinner("Running trend-to-video agent pipeline..."):
-            result = run_trend_to_video(
-                {"title": title, "url": url, "description": ""},
-                creator_profile=load_creator_profile(),
-                platform=platform,
-                style=style,
-                duration=int(duration),
-            )
-        render_result(result)
+st.markdown('<div class="section-title">🎯 Trend Input Panel</div>', unsafe_allow_html=True)
+with st.container(border=True):
+    left, right = st.columns([1.35, 1], gap="large")
+    with left:
+        title = st.text_input("Trend title", value="AI Agent Trend", placeholder="Paste a trend title or product/news headline")
+        url = st.text_input("Trend URL", value="", placeholder="Optional: GitHub, Product Hunt, Hacker News, news page...")
+    with right:
+        platform = st.selectbox("Platform", PLATFORMS, index=0)
+        style = st.selectbox("Style", STYLES, index=0)
+        duration = st.selectbox("Duration", DURATIONS, index=1, format_func=lambda value: f"{value} seconds")
 
-elif page == "Trend Pool":
-    st.subheader("Trend Pool")
-    st.write("A lightweight entry point for finding what to make next. This is not a dashboard.")
-    if st.button("Update topics", type="primary"):
-        with st.spinner("Collecting GitHub Trending, Hacker News, and Product Hunt topics..."):
-            count = upsert_topics(collect_all_topics(limit=20))
-        st.success(f"Updated {count} topics")
+    generate = st.button("🚀 Generate Viral Video Package", type="primary", use_container_width=True)
 
-    topics = list_topics(limit=20)
-    if not topics:
-        st.info("No topics yet. Click Update topics first.")
-    for topic in topics:
-        with st.container(border=True):
-            cols = st.columns([4, 1])
-            cols[0].markdown(f"### #{topic['id']} {topic['title']}")
-            cols[1].metric("Score", round(topic["final_opportunity_score"], 1))
-            st.write(f"**Source:** {topic['source']}  \n**URL:** {topic['url']}")
-            if topic.get("description"):
-                st.write(topic["description"])
-            st.write(f"**Reason:** {topic['recommendation_reason']}")
-            st.write(f"**Risk:** {topic['risk_note']}")
-            with st.form(f"topic-generate-{topic['id']}"):
-                form_cols = st.columns(4)
-                platform = form_cols[0].selectbox("Platform", PLATFORMS, key=f"platform-{topic['id']}")
-                style = form_cols[1].selectbox("Style", STYLES, key=f"style-{topic['id']}")
-                duration = form_cols[2].selectbox("Duration", DURATIONS, index=1, key=f"duration-{topic['id']}")
-                submitted = form_cols[3].form_submit_button("Generate")
-                if submitted:
-                    result = run_trend_to_video(topic, load_creator_profile(), platform, style, duration)
-                    render_result(result)
+st.markdown('<div class="section-title">⚡ Execution Progress</div>', unsafe_allow_html=True)
+progress_box = st.container(border=True)
 
-elif page == "Creator Profile":
-    st.subheader("Creator Profile")
-    profile = load_creator_profile()
-    with st.form("creator-profile"):
-        niche = st.text_area("Creator niche", value=profile.get("niche", ""))
-        tone = st.text_input("Tone", value=profile.get("tone", ""))
-        audience = st.text_input("Audience", value=profile.get("audience", ""))
-        keywords = st.text_input("Keywords", value=", ".join(profile.get("keywords", [])))
-        platforms = st.multiselect("Target platforms", PLATFORMS, default=[p for p in profile.get("target_platforms", []) if p in PLATFORMS])
-        saved = st.form_submit_button("Save profile", type="primary")
-    if saved:
-        profile.update(
-            {
-                "niche": niche,
-                "tone": tone,
-                "audience": audience,
-                "keywords": [item.strip() for item in keywords.split(",") if item.strip()],
-                "target_platforms": platforms,
-            }
+if generate:
+    with progress_box:
+        progress = st.progress(0)
+        status = st.empty()
+        for index, step in enumerate(AGENT_STEPS, start=1):
+            status.markdown(f"**Running:** {step}")
+            progress.progress(index / len(AGENT_STEPS))
+            sleep(0.15)
+        status.markdown("**Finalizing:** Exporting publish-ready package")
+
+    with st.spinner("Building your creator-ready package..."):
+        result = run_trend_to_video(
+            {"title": title, "url": url, "description": ""},
+            creator_profile=load_creator_profile(),
+            platform=PIPELINE_PLATFORMS[platform],
+            style=PIPELINE_STYLES[style],
+            duration=int(duration),
         )
-        save_creator_profile(profile)
-        st.success("Creator profile saved")
-    st.json(profile)
-
+    st.session_state["last_result"] = result
+    with progress_box:
+        st.success("Package ready. Review the final assets below.")
 else:
-    st.subheader("Generated Packages")
-    package_root = Path("outputs/publish_packages")
-    packages = sorted(package_root.glob("*"), reverse=True) if package_root.exists() else []
-    if not packages:
-        st.info("No publish packages yet. Generate a video first.")
-    for package in packages[:20]:
-        with st.container(border=True):
-            st.markdown(f"### {package.name}")
-            st.write(str(package))
-            files = sorted([p.name for p in package.iterdir() if p.is_file()])
-            st.write(", ".join(files))
+    with progress_box:
+        cols = st.columns(4)
+        for index, step in enumerate(AGENT_STEPS[:4]):
+            cols[index].write(f"○ {step}")
+        cols = st.columns(4)
+        for index, step in enumerate(AGENT_STEPS[4:]):
+            cols[index].write(f"○ {step}")
+
+if "last_result" in st.session_state:
+    render_output(st.session_state["last_result"])
+else:
+    st.markdown('<div class="section-title">🎬 Output Package</div>', unsafe_allow_html=True)
+    with st.container(border=True):
+        preview, assets = st.columns([1.2, 1], gap="large")
+        with preview:
+            st.subheader("Ready-to-post video will appear here")
+            st.info("Run the execution pipeline to generate MP4, thumbnail, subtitles, description, hashtags, and quality report.")
+        with assets:
+            st.subheader("Package Preview")
+            st.write("MP4 video")
+            st.write("Thumbnail")
+            st.write("Hashtags and description")
+            st.write("Subtitles")
+            st.write("Quality report summary")

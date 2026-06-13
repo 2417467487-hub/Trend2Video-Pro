@@ -1,68 +1,154 @@
 # Trend2Video Pro
 
 <p align="center">
-  <strong>Trend Intelligence + Content Execution System</strong>
+  <strong>Turn trends into viral-ready short video packages in one click.</strong>
 </p>
 
 <p align="center">
-  Discover trends, predict viral potential, analyze creator fit, and export publish-ready short-video packages.
+  Trend Intelligence + Content Execution System for creators who want publish-ready assets, not another dashboard.
 </p>
 
 <p align="center">
-  <a href="#quick-start">Quick Start</a> |
-  <a href="#pipeline">Pipeline</a> |
-  <a href="#creator-intelligence">Creator Intelligence</a> |
-  <a href="#publish-package">Publish Package</a> |
-  <a href="#chrome-extension">Chrome Extension</a>
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#what-it-builds">What It Builds</a> ·
+  <a href="#pipeline-architecture">Pipeline</a> ·
+  <a href="#output-example">Output Example</a> ·
+  <a href="#screenshots">Screenshots</a>
 </p>
 
 <p align="center">
   <img alt="Python" src="https://img.shields.io/badge/Python-first-3776AB?style=flat-square&logo=python&logoColor=white">
   <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-local%20API-009688?style=flat-square&logo=fastapi&logoColor=white">
-  <img alt="Streamlit" src="https://img.shields.io/badge/Streamlit-execution%20UI-FF4B4B?style=flat-square&logo=streamlit&logoColor=white">
-  <img alt="MoviePy" src="https://img.shields.io/badge/MoviePy-video%20pipeline-111827?style=flat-square">
-  <img alt="SQLite" src="https://img.shields.io/badge/SQLite-trend%20memory-003B57?style=flat-square&logo=sqlite&logoColor=white">
+  <img alt="Streamlit" src="https://img.shields.io/badge/Streamlit-execution%20console-FF4B4B?style=flat-square&logo=streamlit&logoColor=white">
+  <img alt="MoviePy" src="https://img.shields.io/badge/MoviePy-video%20rendering-111827?style=flat-square">
+  <img alt="SQLite" src="https://img.shields.io/badge/SQLite-creator%20memory-003B57?style=flat-square&logo=sqlite&logoColor=white">
   <img alt="License" src="https://img.shields.io/badge/License-MIT-green?style=flat-square">
 </p>
 
 <p align="center">
-  <img src="docs/assets/app-generate-view.png" alt="Trend2Video Pro one-click generation screen" width="920">
+  <img src="docs/assets/demo.gif" alt="Trend2Video Pro demo workflow" width="860">
 </p>
 
-## Why Trend2Video Pro
+## The 5-Second Pitch
 
-Trend2Video Pro is not a dashboard. It is not a simple AI video generator.
+Paste a trend title or URL. Choose a platform. Click one button.
 
-It is an execution-first system for creators:
+Trend2Video Pro runs a creator-focused execution pipeline and exports a complete short-video package:
 
 ```text
-trend discovery -> viral prediction -> creator fit analysis -> content strategy
--> script -> fact check -> storyboard -> video -> publish package -> quality evaluation
+Trend / URL -> Viral Video Package
 ```
 
-The final product is not only a script or a video file. The final product is a structured publish package with MP4, thumbnail, title, description, hashtags, subtitles, metadata, and quality report.
+This is not a dashboard. This is not a simple script generator. It is an execution console for content creators.
 
-Demo mode works without API keys. If an LLM or network collector fails, the system falls back to mock data so the pipeline remains runnable.
+## What It Builds
+
+| Input | Output |
+| --- | --- |
+| Trend title | MP4 vertical video |
+| URL from GitHub, Product Hunt, Hacker News, or news pages | Video title |
+| Target platform | Thumbnail |
+| Creator style | Description |
+| Duration | Hashtags |
+| Creator profile | Subtitles |
+| Quality rules | Quality report |
+
+The end result is a folder you can review and publish from.
+
+## Execution Console
+
+The Streamlit UI is designed around one job: create the package.
+
+```text
+1. Trend Input Panel
+2. Agent Execution Progress
+3. Output Package
+```
+
+No analytics dashboard. No raw technical tables. No log wall.
+
+The UI shows:
+
+- video preview player
+- viral score
+- final title
+- thumbnail preview
+- hashtags
+- description
+- subtitles
+- quality report summary
+- download buttons
+
+## Pipeline Architecture
+
+```mermaid
+flowchart LR
+    A["Trend"] --> B["Score"]
+    B --> C["Strategy"]
+    C --> D["Script"]
+    D --> E["Fact Check"]
+    E --> F["Storyboard"]
+    F --> G["Video"]
+    G --> H["Review"]
+    H --> I["Publish Package"]
+```
+
+Under the hood:
+
+```text
+trend discovery
+-> viral prediction
+-> creator fit analysis
+-> content strategy
+-> script writing
+-> fact checking
+-> storyboard generation
+-> video generation
+-> quality review
+-> publish package export
+```
+
+## Why It Is Different
+
+| Category | AI video generators | Script generators | Trend2Video Pro |
+| --- | --- | --- | --- |
+| Starts from trends | Sometimes | No | Yes |
+| Viral potential scoring | Rare | No | Yes |
+| Creator fit system | No | No | Yes |
+| Script generation | Yes | Yes | Yes |
+| Fact/risk checks | Limited | Limited | Yes |
+| Storyboard | Sometimes | No | Yes |
+| MP4 export | Yes | No | Yes |
+| Publish package | Rare | No | Yes |
+| Local runnable demo | Often no | Usually yes | Yes |
+
+Trend2Video Pro focuses on the whole creator workflow, not a single asset.
+
+## Output Example
+
+```text
+outputs/publish_packages/20260613_222144_ai-agent-trend/
+  video.mp4
+  title.txt
+  description.txt
+  hashtags.txt
+  thumbnail.png
+  subtitles.srt
+  quality_report.md
+  metadata.json
+```
+
+The package contains everything a creator needs for manual review and posting.
 
 ## Screenshots
 
-| One-click generate | Trend pool |
+| Execution console | Topic pool |
 | --- | --- |
-| <img src="docs/assets/app-generate-view.png" alt="One-click generation screen" width="440"> | <img src="docs/assets/topic-pool-view.png" alt="Topic pool screen" width="440"> |
+| <img src="docs/assets/app-generate-view.png" alt="Execution console" width="440"> | <img src="docs/assets/topic-pool-view.png" alt="Topic pool" width="440"> |
 
-| Quality report | Demo flow |
+| Quality report | Demo workflow |
 | --- | --- |
-| <img src="docs/assets/quality-report-view.png" alt="Quality report screen" width="440"> | <img src="docs/assets/demo.gif" alt="Trend2Video Pro demo flow" width="440"> |
-
-## What Makes It Different
-
-| Typical AI video tool | Trend2Video Pro |
-| --- | --- |
-| Starts from a prompt | Starts from trend intelligence |
-| Generates one asset | Exports a complete publish package |
-| Treats every creator the same | Uses creator profile and memory |
-| Has weak quality control | Scores topic, script, facts, video, and readiness |
-| Mostly a UI wrapper | Provides CLI, API, agent pipeline, SQLite history, and extension |
+| <img src="docs/assets/quality-report-view.png" alt="Quality report" width="440"> | <img src="docs/assets/demo.gif" alt="Demo workflow" width="440"> |
 
 ## Quick Start
 
@@ -84,7 +170,7 @@ macOS/Linux:
 source .venv/bin/activate
 ```
 
-Install:
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -98,6 +184,12 @@ macOS/Linux:
 cp .env.example .env
 ```
 
+## Run The Product UI
+
+```bash
+streamlit run app.py
+```
+
 ## CLI
 
 ```bash
@@ -106,21 +198,6 @@ python main.py update-topics
 python main.py list-topics
 python main.py generate-from-topic --topic-id 1 --platform "Xiaohongshu" --style "Tech News" --duration 60
 ```
-
-## Streamlit UI
-
-```bash
-streamlit run app.py
-```
-
-The UI stays intentionally simple:
-
-- One-click generate
-- Trend list
-- Creator profile editor
-- Generated publish packages viewer
-
-No analytics dashboard. The interface exists to execute the pipeline.
 
 ## API
 
@@ -137,162 +214,43 @@ Endpoints:
 - `GET /api/topics`
 - `POST /api/generate-from-topic?topic_id=1`
 
-Score-only example:
+## Chrome Extension
+
+The lightweight extension in `extension/` adds a `Generate Video` button on GitHub, Product Hunt, and Hacker News pages.
+
+Run the local API first:
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/score ^
-  -H "Content-Type: application/json" ^
-  -d "{\"title\":\"AI Agent Trend\",\"platform\":\"Bilibili\",\"style\":\"Tech News\"}"
+uvicorn api:app --reload
 ```
 
-Returns:
+Then load `extension/` from `chrome://extensions` with Developer mode enabled.
 
-```json
-{
-  "viral_probability": 0.67,
-  "predicted_views": "10k-50k",
-  "competition_level": "medium",
-  "recommendation": "generate_now",
-  "explanation": "Rule-based MVP using trend, urgency, creator fit, monetization, competition, hook strength, and platform fit."
-}
-```
-
-## Pipeline
-
-```mermaid
-flowchart TD
-    A["Trend Scout Agent"] --> B["Trend Analyst Agent"]
-    B --> C["Viral Prediction Engine"]
-    C --> D["Creator Strategy Agent"]
-    D --> E["Script Writer Agent"]
-    E --> F["Fact Checker Agent"]
-    F --> G["Storyboard Agent"]
-    G --> H["Video Producer Agent"]
-    H --> I["Quality Reviewer Agent"]
-    I --> J["Publish Package"]
-```
-
-Main orchestrator:
-
-```python
-from src.agents.orchestrator import run_trend_to_video
-
-result = run_trend_to_video(
-    topic={"title": "AI Agent Trend", "url": ""},
-    creator_profile=None,
-    platform="Bilibili",
-    style="Tech News",
-    duration=60,
-)
-```
-
-## Creator Intelligence
-
-Creator profile and memory live in:
+## Core Modules
 
 ```text
-src/creator/creator_profile.json
-src/creator/creator_memory.py
-src/creator/fit_scorer.py
+src/agents/       multi-agent orchestration
+src/creator/      creator profile, memory, and fit scoring
+src/prediction/   viral prediction engine
+src/generation/   script, title, storyboard, and copy generation
+src/media/        TTS, subtitles, thumbnail, and MP4 rendering
+src/quality/      script, fact, video, and final quality checks
+src/publishing/   publish package builder
+src/database/     SQLite trend history and package records
 ```
-
-The system stores:
-
-- creator niche
-- target platforms
-- tone and audience
-- past viral content
-- historical generation records
-
-Outputs:
-
-- `creator_fit_score`
-- matched creator keywords
-- recommended content angle
-- explanation
-
-## Viral Prediction
-
-The MVP predictor is transparent and rule-based, with an optional path for future sklearn regression.
-
-Features:
-
-- trend score
-- competition score
-- urgency score
-- creator fit score
-- hook strength estimate
-- platform short-video fit
-
-Output:
-
-- `viral_probability`
-- `predicted_view_range`
-- `confidence_level`
-- `explanation`
-
-## Publish Package
-
-After generation, Trend2Video Pro exports:
-
-```text
-outputs/publish_packages/{id}/
-  video.mp4
-  title.txt
-  description.txt
-  hashtags.txt
-  thumbnail.png
-  subtitles.srt
-  quality_report.md
-  metadata.json
-```
-
-This folder is the handoff unit for manual review and publishing.
 
 ## Quality Control
 
-Quality checks are implemented in code:
+Trend2Video Pro includes quality control in code:
 
-- `review_script()` checks hook, clarity, density, factual risk, and platform fit.
-- `check_factual_risk()` flags absolute claims.
-- `check_video_quality()` outputs hook score, clarity score, density score, factual risk score, and overall score.
-- `generate_final_report()` writes Markdown and JSON reports.
+- script hook score
+- clarity score
+- information density score
+- factual risk score
+- video quality score
+- final report
 
-Opportunity formula:
-
-```text
-final_score =
-0.30 * trend_score
-+ 0.20 * audience_fit_score
-+ 0.20 * monetization_score
-+ 0.20 * urgency_score
-- 0.10 * competition_score
-```
-
-## Data Layer
-
-SQLite tables:
-
-- `trends`
-- `creator_memory`
-- `viral_predictions`
-- `publish_packages`
-- `generation_tasks`
-- `topic_snapshots`
-
-URLs are deduplicated in the trend table. Trend history is preserved for future model training.
-
-## Chrome Extension
-
-A lightweight extension is included in `extension/`.
-
-It detects GitHub, Product Hunt, and Hacker News pages, adds a `Generate Video` button, and sends the page title and URL to:
-
-```text
-POST http://127.0.0.1:8000/api/generate
-```
-
-Load it from `chrome://extensions` with Developer mode -> Load unpacked -> select `extension/`.
+Low-scoring topics can still be generated, but the report will explain why they are not priority production candidates.
 
 ## Benchmark
 
@@ -300,18 +258,12 @@ Load it from `chrome://extensions` with Developer mode -> Load unpacked -> selec
 python evaluation/run_benchmark.py
 ```
 
-Metrics:
+Benchmark output includes:
 
 - hook score
 - viral accuracy proxy
 - script quality
 - publish readiness score
-
-Output:
-
-```text
-evaluation/benchmark_summary.md
-```
 
 ## Tests
 
@@ -319,23 +271,20 @@ evaluation/benchmark_summary.md
 pytest
 ```
 
-Tests run in mock mode and do not require API keys.
+The test suite runs in mock mode and does not require API keys.
 
 ## Roadmap
 
-- Citation-aware fact checking.
-- Better topic collectors and source extraction.
-- Creator profile presets.
-- Real performance feedback loop from published videos.
-- More visual templates and subtitle styles.
-- Optional publishing integrations after local package export is stable.
-- Replace rule-based viral prediction once enough history exists.
-
-See [docs/ROADMAP.md](docs/ROADMAP.md).
+- Better source extraction from trend pages
+- Citation-aware fact checking
+- More creator profile presets
+- Stronger thumbnail and subtitle templates
+- Trained viral prediction once enough history exists
+- Optional publishing integrations after local package export is stable
 
 ## Contributing
 
-This repository is public. Fork it, improve an agent, add a template, or open a Pull Request.
+This is a public open-source project. Fork it, improve an agent, add a template, or open a pull request.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
