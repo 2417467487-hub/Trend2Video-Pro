@@ -7,7 +7,7 @@ from typing import Any
 
 from config.settings import settings
 from src.collectors.webpage_screenshot import capture_webpage
-from src.database.db import init_db, save_generation_task
+from src.database.db import init_db, save_generation_task, save_publish_package_record
 from src.generation.script_generator import generate_script
 from src.generation.storyboard_generator import generate_storyboard
 from src.media.subtitle_generator import generate_srt
@@ -109,7 +109,7 @@ def run_generation(request: GenerationRequest) -> dict[str, Any]:
     result["publish_package"] = build_publish_package(result)
 
     try:
-        save_generation_task(
+        task_id = save_generation_task(
             topic_id=request.topic_id,
             title=request.title,
             platform=request.platform,
@@ -119,6 +119,7 @@ def run_generation(request: GenerationRequest) -> dict[str, Any]:
             output_video_path=video_path,
             output_report_path=report["report_md_path"],
         )
+        save_publish_package_record(task_id=task_id, title=request.title, package=result["publish_package"])
     except Exception as exc:
         logger.warning("Database write failed: %s", exc)
 

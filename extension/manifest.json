@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Trend2Video Pro",
+  "version": "0.1.0",
+  "description": "Send GitHub, Product Hunt, and Hacker News pages to a local Trend2Video Pro API.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:8000/*",
+    "http://localhost:8000/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://github.com/*",
+        "https://www.producthunt.com/*",
+        "https://news.ycombinator.com/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ],
+  "action": {
+    "default_title": "Generate Video"
+  }
+}

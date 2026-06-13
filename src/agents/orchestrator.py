@@ -11,6 +11,7 @@ from src.agents.trend_analyst_agent import analyze_trend
 from src.agents.video_producer_agent import produce_video
 from src.creator.creator_profile import load_creator_profile
 from src.creator.creator_memory import remember_generation
+from src.database.db import save_creator_memory_record, save_viral_prediction
 from src.prediction.viral_predictor import predict_viral_potential
 from src.publishing.package_builder import build_publish_package
 
@@ -32,6 +33,15 @@ def run_trend_to_video(
     analyzed_topic = analyze_trend({**topic_payload, "platform": platform, "style": style}, creator_profile)
     strategy = build_creator_strategy(analyzed_topic, creator_profile, platform, style)
     viral_prediction = predict_viral_potential(analyzed_topic, strategy["creator_fit"], platform)
+    try:
+        save_viral_prediction(
+            topic_id=analyzed_topic.get("id"),
+            title=analyzed_topic.get("title", "Untitled trend"),
+            platform=platform,
+            prediction=viral_prediction,
+        )
+    except Exception:
+        pass
     result = produce_video(analyzed_topic, platform, style, duration)
     result["analyzed_topic"] = analyzed_topic
     result["creator_strategy"] = strategy
@@ -50,4 +60,15 @@ def run_trend_to_video(
     ]
     result["publish_package"] = build_publish_package(result)
     remember_generation(analyzed_topic, result)
+    try:
+        save_creator_memory_record(
+            creator_name=creator_profile.get("creator_name", ""),
+            topic_title=analyzed_topic.get("title", ""),
+            platform=platform,
+            creator_fit_score=float(strategy["creator_fit"].get("creator_fit_score", 0)),
+            viral_probability=float(viral_prediction.get("viral_probability", 0)),
+            notes=str(strategy["creator_fit"].get("recommended_angle", "")),
+        )
+    except Exception:
+        pass
     return result

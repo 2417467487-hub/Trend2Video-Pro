@@ -60,4 +60,14 @@ def build_publish_package(result: dict[str, Any], output_root: Path | None = Non
             "metadata": str(metadata_path),
         }
     )
+    exported["files"] = {
+        "video.mp4": exported.get("video", ""),
+        "thumbnail.png": exported.get("thumbnail", ""),
+        "subtitles.srt": exported.get("subtitles", ""),
+        "quality_report.md": exported.get("quality_report", ""),
+        "title.txt": str(title_path),
+        "description.txt": str(description_path),
+        "hashtags.txt": str(hashtags_path),
+        "metadata.json": str(metadata_path),
+    }
     return exported

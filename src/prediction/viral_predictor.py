@@ -14,9 +14,10 @@ def predict_viral_potential(topic: dict[str, Any], creator_fit: dict[str, Any] |
         0.28 * features["trend"]
         + 0.20 * features["urgency"]
         + 0.18 * features["creator_fit"]
-        + 0.14 * features["monetization"]
-        + 0.12 * features["competition_inverse"]
-        + 0.08 * features["platform_short_video_bonus"]
+        + 0.12 * features["monetization"]
+        + 0.10 * features["competition_inverse"]
+        + 0.08 * features["hook_strength"]
+        + 0.04 * features["platform_short_video_bonus"]
     )
     probability = max(0.05, min(0.95, round(probability, 3)))
     if probability >= 0.72:
@@ -31,7 +32,8 @@ def predict_viral_potential(topic: dict[str, Any], creator_fit: dict[str, Any] |
     return {
         "viral_probability": probability,
         "predicted_view_range": view_range,
+        "predicted_views": view_range,
         "confidence_level": confidence,
         "features": features,
-        "explanation": "Rule-based MVP using trend, urgency, creator fit, monetization, competition, and platform fit.",
+        "explanation": "Rule-based MVP using trend, urgency, creator fit, monetization, competition, hook strength, and platform fit.",
     }

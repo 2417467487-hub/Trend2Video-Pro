@@ -21,10 +21,19 @@ def check_video_quality(video_path: str, script: str | int = "", topic: dict[str
     resolution_check = True
     subtitle_check = len(script_text) > 20 if script_text else True
     audio_check = exists and size_mb > 0.05
-    hook_check = any(word in script_text[:80] for word in ["别", "一分钟", "正在", "可能", "注意"]) if script_text else True
+
+    opening = script_text[:180].lower()
+    hook_keywords = ["do not", "stop", "why", "what if", "trend", "attention", "here is", "not just"]
+    hook_score = 88 if any(word in opening for word in hook_keywords) else 70 if opening else 60
+    clarity_score = 88 if len(script_text.split()) >= 80 or len(script_text) >= 240 else 74
+    key_point_markers = sum(script_text.lower().count(marker) for marker in ["first", "second", "third", "1.", "2.", "3.", "key point"])
+    density_score = min(96, 72 + key_point_markers * 8)
+    factual_risk_score = 72 if any(term in script_text.lower() for term in ["guaranteed", "always", "never", "100%"]) else 90
+    hook_check = hook_score >= 75 if script_text else True
 
     checks = [duration_check, resolution_check, subtitle_check, audio_check, hook_check]
-    overall = round(sum(20 for item in checks if item), 2)
+    technical_score = round(sum(20 for item in checks if item), 2)
+    overall = round((hook_score + clarity_score + density_score + factual_risk_score + technical_score) / 5, 2)
 
     return {
         "video_exists": exists,
@@ -35,6 +44,12 @@ def check_video_quality(video_path: str, script: str | int = "", topic: dict[str
         "subtitle_check": subtitle_check,
         "audio_check": audio_check,
         "hook_check": hook_check,
+        "hook_score": hook_score,
+        "clarity_score": clarity_score,
+        "density_score": density_score,
+        "factual_risk_score": factual_risk_score,
+        "technical_score": technical_score,
+        "overall_score": overall,
         "overall_video_score": overall,
         "video_quality_score": overall,
         "checks": {

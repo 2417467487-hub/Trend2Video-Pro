@@ -1,6 +1,6 @@
 # Architecture
 
-Trend2Video Pro is an execution-first Trend-to-Video Agent Framework. It is not a dashboard: every interface routes the user toward a publishable local package.
+Trend2Video Pro is a Trend Intelligence + Content Execution System. It is not a dashboard: every interface routes the user toward a publishable local package.
 
 ```mermaid
 flowchart LR
@@ -9,9 +9,9 @@ flowchart LR
     API["FastAPI API"] --> ORCH
     TOPICS["Trend Pool / Link / Title"] --> SCOUT["Trend Scout"]
     SCOUT --> ANALYST["Trend Analyst"]
-    ANALYST --> FIT["Creator Strategy + Memory"]
-    FIT --> VIRAL["Viral Prediction"]
-    VIRAL --> PROD["Video Producer"]
+    ANALYST --> VIRAL["Viral Prediction"]
+    VIRAL --> FIT["Creator Strategy + Memory"]
+    FIT --> PROD["Video Producer"]
     PROD --> QC["Quality Reviewer"]
     QC --> PKG["Publish Package"]
     PKG --> OUT["outputs/publish_packages/"]
@@ -39,7 +39,7 @@ flowchart LR
 - `src/media/`: TTS, subtitles, video composition, thumbnails, and assets.
 - `src/quality/`: script review, fact-risk hints, video checks, and final reports.
 - `src/publishing/`: publish package export.
-- `src/database/`: SQLite topic and generation records.
+- `src/database/`: SQLite trends, creator memory, viral predictions, publish packages, and generation records.
 
 ## Design Principles
 

@@ -17,7 +17,7 @@ DURATIONS = [30, 60, 90]
 
 st.set_page_config(page_title="Trend2Video Pro", layout="wide")
 st.title("Trend2Video Pro")
-st.caption("The open-source Trend-to-Video Agent Framework for content creators")
+st.caption("Trend Intelligence + Content Execution System")
 
 page = st.sidebar.radio("Page", ["One-Click Generate", "Trend Pool", "Creator Profile", "Generated Packages"])
 

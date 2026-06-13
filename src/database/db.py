@@ -107,26 +107,129 @@ def save_generation_task(
     status: str,
     output_video_path: str,
     output_report_path: str,
-) -> None:
+) -> int:
     """Persist a generation task."""
     from src.database.models import GenerationTask
 
     init_db()
     db = SessionLocal()
     try:
-        db.add(
-            GenerationTask(
-                topic_id=topic_id,
-                title=title,
-                platform=platform,
-                style=style,
-                duration=duration,
-                status=status,
-                output_video_path=output_video_path,
-                output_report_path=output_report_path,
-            )
+        task = GenerationTask(
+            topic_id=topic_id,
+            title=title,
+            platform=platform,
+            style=style,
+            duration=duration,
+            status=status,
+            output_video_path=output_video_path,
+            output_report_path=output_report_path,
         )
+        db.add(task)
         db.commit()
+        db.refresh(task)
+        return int(task.id)
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
+def save_viral_prediction(
+    *,
+    topic_id: int | None,
+    title: str,
+    platform: str,
+    prediction: dict[str, Any],
+) -> int:
+    """Persist a viral prediction for trend history and future training."""
+    from src.database.models import ViralPrediction
+
+    init_db()
+    db = SessionLocal()
+    try:
+        row = ViralPrediction(
+            topic_id=topic_id,
+            title=title,
+            platform=platform,
+            viral_probability=float(prediction.get("viral_probability", 0)),
+            predicted_view_range=prediction.get("predicted_view_range", prediction.get("predicted_views", "")),
+            confidence_level=prediction.get("confidence_level", ""),
+            explanation=prediction.get("explanation", ""),
+        )
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+        return int(row.id)
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
+def save_publish_package_record(
+    *,
+    task_id: int | None,
+    title: str,
+    package: dict[str, Any],
+) -> int:
+    """Persist a publish package export."""
+    from src.database.models import PublishPackage
+
+    init_db()
+    db = SessionLocal()
+    try:
+        files = package.get("files", {})
+        row = PublishPackage(
+            task_id=task_id,
+            title=title,
+            package_dir=package.get("package_dir", ""),
+            video_path=files.get("video.mp4", ""),
+            thumbnail_path=files.get("thumbnail.png", ""),
+            report_path=files.get("quality_report.md", ""),
+            metadata_path=files.get("metadata.json", ""),
+        )
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+        return int(row.id)
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
+def save_creator_memory_record(
+    *,
+    creator_name: str,
+    topic_title: str,
+    platform: str,
+    creator_fit_score: float,
+    viral_probability: float,
+    actual_views: int = 0,
+    notes: str = "",
+) -> int:
+    """Persist creator memory as structured training data."""
+    from src.database.models import CreatorMemoryRecord
+
+    init_db()
+    db = SessionLocal()
+    try:
+        row = CreatorMemoryRecord(
+            creator_name=creator_name,
+            topic_title=topic_title,
+            platform=platform,
+            creator_fit_score=creator_fit_score,
+            viral_probability=viral_probability,
+            actual_views=actual_views,
+            notes=notes,
+        )
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+        return int(row.id)
     except Exception:
         db.rollback()
         raise
