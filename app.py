@@ -28,11 +28,11 @@ AGENT_STEPS = [
 ]
 
 
-st.set_page_config(page_title="Trend2Video Pro", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="Trend2Video Pro", page_icon="T2V", layout="wide")
 st.markdown(
     """
     <style>
-    .block-container {padding-top: 2rem; max-width: 1180px;}
+    .block-container {padding-top: 2rem; max-width: 1160px;}
     div[data-testid="stMetric"] {
         background: linear-gradient(135deg, #ecfeff 0%, #f8fafc 100%);
         border: 1px solid #dbeafe;
@@ -40,7 +40,7 @@ st.markdown(
         border-radius: 14px;
     }
     .hero {
-        padding: 26px 30px;
+        padding: 28px 32px;
         border-radius: 22px;
         color: white;
         background: linear-gradient(135deg, #0f172a 0%, #075985 52%, #0891b2 100%);
@@ -48,14 +48,7 @@ st.markdown(
     }
     .hero h1 {font-size: 44px; margin: 0 0 8px 0;}
     .hero p {font-size: 18px; opacity: .92; margin: 0;}
-    .section-title {font-size: 23px; font-weight: 800; margin: 14px 0 8px 0;}
-    .soft-card {
-        border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        padding: 20px;
-        background: #ffffff;
-        box-shadow: 0 14px 40px rgba(15, 23, 42, .06);
-    }
+    .section-title {font-size: 23px; font-weight: 800; margin: 16px 0 8px 0;}
     .package-path {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
@@ -71,8 +64,8 @@ st.markdown(
 st.markdown(
     """
     <div class="hero">
-      <h1>🚀 Trend2Video Pro</h1>
-      <p>Execution Console for Content Creators. Turn trends into publish-ready video packages in one click.</p>
+      <h1>Trend2Video Pro</h1>
+      <p>Execution Console for Content Creators. Input a trend, run the agents, export a publish-ready package.</p>
     </div>
     """,
     unsafe_allow_html=True,
@@ -81,7 +74,7 @@ st.markdown(
 
 def _read_text(path: str | Path, max_chars: int = 1200) -> str:
     file_path = Path(path)
-    if not file_path.exists():
+    if not file_path.is_file():
         return ""
     return file_path.read_text(encoding="utf-8", errors="ignore")[:max_chars]
 
@@ -90,11 +83,7 @@ def _quality_summary(result: dict) -> list[str]:
     report = result.get("report", {})
     risks = report.get("risks", [])[:2]
     suggestions = report.get("suggestions", [])[:2]
-    items = []
-    if risks:
-        items.extend([f"Risk: {item}" for item in risks])
-    if suggestions:
-        items.extend([f"Improve: {item}" for item in suggestions])
+    items = [f"Risk: {item}" for item in risks] + [f"Improve: {item}" for item in suggestions]
     return items or ["No blocking publishing risk detected in the MVP quality checks."]
 
 
@@ -106,7 +95,7 @@ def render_output(result: dict) -> None:
     package = result.get("publish_package", {})
     viral_score = round(float(viral.get("viral_probability", 0)) * 100)
 
-    st.markdown('<div class="section-title">🎬 Output Package</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">3. Output: Publish-Ready Package</div>', unsafe_allow_html=True)
     top_left, top_right = st.columns([1.25, 1], gap="large")
 
     with top_left:
@@ -123,7 +112,8 @@ def render_output(result: dict) -> None:
             st.subheader("Creator Assets")
             st.metric("Viral Score", f"{viral_score}/100")
             st.markdown(f"**Title**  \n{script.get('title', result.get('input', {}).get('title', 'Untitled'))}")
-            st.markdown(f"**Hashtags**  \n{' '.join('#' + str(tag).replace(' ', '') for tag in script.get('tags', []))}")
+            tags = " ".join("#" + str(tag).replace(" ", "") for tag in script.get("tags", []))
+            st.markdown(f"**Hashtags**  \n{tags or '#Trend #Creator #Video'}")
             st.markdown(f"**Description**  \n{script.get('description', 'A concise trend breakdown for creators.')}")
             thumbnail_path = Path(files.get("thumbnail", ""))
             if thumbnail_path.is_file():
@@ -145,7 +135,7 @@ def render_output(result: dict) -> None:
                 st.markdown("**Publish package**")
                 st.markdown(f"<div class='package-path'>{package['package_dir']}</div>", unsafe_allow_html=True)
 
-    st.markdown("#### Download Assets")
+    st.markdown("#### Download Package Assets")
     download_items = [
         ("MP4 Video", files.get("video")),
         ("Thumbnail", files.get("thumbnail")),
@@ -159,20 +149,20 @@ def render_output(result: dict) -> None:
             col.download_button(label, data=file_path.read_bytes(), file_name=file_path.name, use_container_width=True)
 
 
-st.markdown('<div class="section-title">🎯 Trend Input Panel</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">1. Input: Trend Brief</div>', unsafe_allow_html=True)
 with st.container(border=True):
     left, right = st.columns([1.35, 1], gap="large")
     with left:
-        title = st.text_input("Trend title", value="AI Agent Trend", placeholder="Paste a trend title or product/news headline")
+        title = st.text_input("Trend title", value="AI Agent Trend", placeholder="Paste a product, GitHub repo, news headline, or creator trend")
         url = st.text_input("Trend URL", value="", placeholder="Optional: GitHub, Product Hunt, Hacker News, news page...")
     with right:
         platform = st.selectbox("Platform", PLATFORMS, index=0)
         style = st.selectbox("Style", STYLES, index=0)
         duration = st.selectbox("Duration", DURATIONS, index=1, format_func=lambda value: f"{value} seconds")
 
-    generate = st.button("🚀 Generate Viral Video Package", type="primary", use_container_width=True)
+    generate = st.button("Generate Video Package", type="primary", use_container_width=True)
 
-st.markdown('<div class="section-title">⚡ Execution Progress</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">2. Execute: Agent Pipeline</div>', unsafe_allow_html=True)
 progress_box = st.container(border=True)
 
 if generate:
@@ -198,26 +188,26 @@ if generate:
         st.success("Package ready. Review the final assets below.")
 else:
     with progress_box:
-        cols = st.columns(4)
+        first_row = st.columns(4)
         for index, step in enumerate(AGENT_STEPS[:4]):
-            cols[index].write(f"○ {step}")
-        cols = st.columns(4)
+            first_row[index].write(f"- {step}")
+        second_row = st.columns(4)
         for index, step in enumerate(AGENT_STEPS[4:]):
-            cols[index].write(f"○ {step}")
+            second_row[index].write(f"- {step}")
 
 if "last_result" in st.session_state:
     render_output(st.session_state["last_result"])
 else:
-    st.markdown('<div class="section-title">🎬 Output Package</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">3. Output: Publish-Ready Package</div>', unsafe_allow_html=True)
     with st.container(border=True):
         preview, assets = st.columns([1.2, 1], gap="large")
         with preview:
-            st.subheader("Ready-to-post video will appear here")
-            st.info("Run the execution pipeline to generate MP4, thumbnail, subtitles, description, hashtags, and quality report.")
+            st.subheader("Video preview will appear here")
+            st.info("Run the pipeline to generate MP4, thumbnail, subtitles, description, hashtags, and quality report.")
         with assets:
-            st.subheader("Package Preview")
-            st.write("MP4 video")
-            st.write("Thumbnail")
-            st.write("Hashtags and description")
-            st.write("Subtitles")
-            st.write("Quality report summary")
+            st.subheader("Package Assets")
+            st.write("- MP4 video")
+            st.write("- Thumbnail")
+            st.write("- Hashtags and description")
+            st.write("- Subtitles")
+            st.write("- Quality report summary")
